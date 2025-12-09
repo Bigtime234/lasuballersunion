@@ -11,19 +11,23 @@ import { revalidatePath } from 'next/cache';
 export async function createMatch(data: unknown) {
   try {
     const session = await auth();
-    if (! session || session.user.role !== 'admin') {
+    if (!session || session.user.role !== 'admin') {
       return { error: 'Unauthorized - Admin access required' };
     }
 
     const validatedData = createMatchSchema. parse(data);
 
     // Verify faculties exist and are different
+    if (validatedData.homeFacultyId === validatedData.awayFacultyId) {
+      return { error: 'Home and away faculties must be different' };
+    }
+
     const [homeExists, awayExists] = await Promise.all([
       db.query.faculties.findFirst({ where: eq(faculties.id, validatedData.homeFacultyId) }),
-      db. query.faculties.findFirst({ where: eq(faculties.id, validatedData.awayFacultyId) })
+      db.query.faculties.findFirst({ where: eq(faculties.id, validatedData.awayFacultyId) })
     ]);
 
-    if (!  homeExists || ! awayExists) {
+    if (! homeExists || !awayExists) {
       return { error: 'One or both faculties do not exist' };
     }
 
@@ -49,8 +53,8 @@ export async function createMatch(data: unknown) {
       session.user.id,
       'CREATE_MATCH',
       'MATCH',
-      newMatch. id,
-      `Created match: ${homeExists.abbreviation} vs ${awayExists.  abbreviation} on ${validatedData.matchDate}`
+      newMatch.id,
+      `Created match: ${homeExists.abbreviation} vs ${awayExists. abbreviation} on ${validatedData.matchDate}`
     );
 
     revalidatePath('/control-center');
@@ -67,23 +71,44 @@ export async function createMatch(data: unknown) {
 export async function updateMatchScore(matchId: number, data: unknown) {
   try {
     const session = await auth();
-    if (! session || session.user.  role !== 'admin') {
+    if (!session || session. user.role !== 'admin') {
       return { error: 'Unauthorized - Admin access required' };
     }
 
-    const validatedData = updateScoreSchema.parse(data);
+    const validatedData = updateScoreSchema. parse(data);
 
-    // Get current match
-    const currentMatch = await db.  query.matches.findFirst({
-      where: eq(matches.id, matchId),
+    // Get current match with full details
+    const currentMatch = await db.query.matches.findFirst({
+      where: eq(matches. id, matchId),
       with: {
         homeFaculty: true,
         awayFaculty: true,
       }
     });
 
-    if (! currentMatch) {
+    if (!currentMatch) {
       return { error: 'Match not found' };
+    }
+
+    // Check if this is a score update (scores changed)
+    const scoreChanged = 
+      currentMatch.scoreHome !== validatedData.scoreHome || 
+      currentMatch.scoreAway !== validatedData.scoreAway;
+
+    const statusChanged = currentMatch.status !== validatedData. status;
+
+    // If match was ALREADY finished and now being re-updated, reverse old stats first
+    if (
+      currentMatch.status === 'FINISHED' && 
+      scoreChanged && 
+      currentMatch.importance !== 'Friendly'
+    ) {
+      await reverseFacultyStats(
+        currentMatch.homeFacultyId,
+        currentMatch.awayFacultyId,
+        currentMatch.scoreHome,  // OLD scores
+        currentMatch.scoreAway
+      );
     }
 
     // Build update data
@@ -91,32 +116,54 @@ export async function updateMatchScore(matchId: number, data: unknown) {
       scoreHome: validatedData.scoreHome,
       scoreAway: validatedData.scoreAway,
       matchMinute: validatedData.matchMinute,
-      status: validatedData.  status,
+      status: validatedData.status,
       updatedAt: new Date(),
     };
 
     // Handle status transitions
-    if (validatedData.  status === 'LIVE' && currentMatch.status === 'PENDING') {
+    if (validatedData.status === 'LIVE' && currentMatch.status === 'PENDING') {
       updateData.startedAt = new Date();
     }
 
-    if (validatedData.  status === 'FINISHED' && currentMatch.status !== 'FINISHED') {
+    if (validatedData.status === 'FINISHED' && currentMatch.status !== 'FINISHED') {
       updateData.finishedAt = new Date();
     }
 
+    // Update the match
     const [updatedMatch] = await db
       .update(matches)
       .set(updateData)
       .where(eq(matches.id, matchId))
       .returning();
 
-    // Update faculty stats if match is finished AND NOT friendly
-    if (validatedData.status === 'FINISHED' && currentMatch.status !== 'FINISHED' && currentMatch.importance !== 'Friendly') {
+    // Only calculate stats if:
+    // 1. Match is now FINISHED (status changed to FINISHED)
+    // 2. Match was NOT already finished (prevent re-adding)
+    // 3. It's NOT a friendly match
+    if (
+      validatedData.status === 'FINISHED' && 
+      currentMatch.status !== 'FINISHED' && 
+      currentMatch.importance !== 'Friendly'
+    ) {
       await updateFacultyStats(
         currentMatch.homeFacultyId,
-        currentMatch.  awayFacultyId,
-        validatedData.scoreHome,
-        validatedData.  scoreAway
+        currentMatch. awayFacultyId,
+        validatedData.scoreHome,  // NEW scores
+        validatedData.scoreAway
+      );
+    }
+
+    // If score changed on an already finished match, add NEW stats (old ones already reversed above)
+    if (
+      currentMatch.status === 'FINISHED' && 
+      scoreChanged && 
+      currentMatch.importance !== 'Friendly'
+    ) {
+      await updateFacultyStats(
+        currentMatch.homeFacultyId,
+        currentMatch.awayFacultyId,
+        validatedData.scoreHome,  // NEW scores
+        validatedData. scoreAway
       );
     }
 
@@ -144,7 +191,7 @@ export async function updateMatchScore(matchId: number, data: unknown) {
 export async function updateMatch(matchId: number, data: unknown) {
   try {
     const session = await auth();
-    if (!session || session.user. role !== 'admin') {
+    if (!session || session.user.role !== 'admin') {
       return { error: 'Unauthorized' };
     }
 
@@ -154,10 +201,10 @@ export async function updateMatch(matchId: number, data: unknown) {
       .update(matches)
       .set({
         ...validatedData,
-        matchDate: validatedData.matchDate ?   new Date(validatedData.matchDate) : undefined,
+        matchDate: validatedData.matchDate ?  new Date(validatedData.matchDate) : undefined,
         updatedAt: new Date(),
       })
-      .  where(eq(matches.id, matchId))
+      . where(eq(matches.id, matchId))
       .returning();
 
     await logAdminActivity(
@@ -178,6 +225,10 @@ export async function updateMatch(matchId: number, data: unknown) {
   }
 }
 
+/**
+ * Calculate and ADD faculty stats when match finishes
+ * Only called once when status changes to FINISHED
+ */
 async function updateFacultyStats(
   homeFacultyId: number,
   awayFacultyId: number,
@@ -185,21 +236,20 @@ async function updateFacultyStats(
   awayScore: number
 ) {
   try {
-    // Get current faculty stats
     const [homeFac, awayFac] = await Promise.all([
-      db.  query.faculties.findFirst({ where: eq(faculties.id, homeFacultyId) }),
-      db. query.faculties.findFirst({ where: eq(faculties.id, awayFacultyId) })
+      db. query.faculties.findFirst({ where: eq(faculties.id, homeFacultyId) }),
+      db.query.faculties.findFirst({ where: eq(faculties.id, awayFacultyId) })
     ]);
 
-    if (!homeFac || !awayFac) return;
+    if (! homeFac || !awayFac) return;
 
-    // Calculate new stats
+    // Calculate result
     const homeWon = homeScore > awayScore;
     const awayWon = awayScore > homeScore;
     const isDraw = homeScore === awayScore;
 
     // Update home faculty
-    await db. update(faculties). set({
+    await db. update(faculties).set({
       played: homeFac.played + 1,
       won: homeFac.won + (homeWon ? 1 : 0),
       drawn: homeFac.drawn + (isDraw ? 1 : 0),
@@ -210,30 +260,86 @@ async function updateFacultyStats(
       points: homeFac.points + (homeWon ? 3 : isDraw ? 1 : 0),
       currentStreak: homeWon ? homeFac.currentStreak + 1 : 0,
       updatedAt: new Date(),
-    }).where(eq(faculties.  id, homeFacultyId));
+    }). where(eq(faculties.id, homeFacultyId));
 
     // Update away faculty
-    await db.update(faculties).  set({
+    await db.update(faculties).set({
       played: awayFac.played + 1,
-      won: awayFac.won + (awayWon ? 1 : 0),
-      drawn: awayFac.drawn + (isDraw ? 1 : 0),
+      won: awayFac. won + (awayWon ?  1 : 0),
+      drawn: awayFac. drawn + (isDraw ? 1 : 0),
       lost: awayFac.lost + (homeWon ? 1 : 0),
-      goalsFor: awayFac. goalsFor + awayScore,
+      goalsFor: awayFac.goalsFor + awayScore,
       goalsAgainst: awayFac.goalsAgainst + homeScore,
       goalDifference: awayFac.goalDifference + (awayScore - homeScore),
-      points: awayFac. points + (awayWon ?  3 : isDraw ? 1 : 0),
+      points: awayFac.points + (awayWon ? 3 : isDraw ? 1 : 0),
       currentStreak: awayWon ? awayFac.currentStreak + 1 : 0,
       updatedAt: new Date(),
-    }).where(eq(faculties.id, awayFacultyId));
+    }).where(eq(faculties. id, awayFacultyId));
 
   } catch (error) {
     console.error('Error updating faculty stats:', error);
   }
 }
 
+/**
+ * REVERSE/SUBTRACT faculty stats when score is edited on finished match
+ * Removes the old stats before new ones are added
+ */
+async function reverseFacultyStats(
+  homeFacultyId: number,
+  awayFacultyId: number,
+  homeScore: number,
+  awayScore: number
+) {
+  try {
+    const [homeFac, awayFac] = await Promise.all([
+      db. query.faculties.findFirst({ where: eq(faculties.id, homeFacultyId) }),
+      db.query.faculties.findFirst({ where: eq(faculties.id, awayFacultyId) })
+    ]);
+
+    if (!homeFac || !awayFac) return;
+
+    // Calculate old result
+    const homeWon = homeScore > awayScore;
+    const awayWon = awayScore > homeScore;
+    const isDraw = homeScore === awayScore;
+
+    // SUBTRACT from home faculty
+    await db.update(faculties).set({
+      played: Math.max(0, homeFac.played - 1),
+      won: Math.max(0, homeFac.won - (homeWon ? 1 : 0)),
+      drawn: Math. max(0, homeFac. drawn - (isDraw ? 1 : 0)),
+      lost: Math.max(0, homeFac.lost - (awayWon ? 1 : 0)),
+      goalsFor: Math.max(0, homeFac.goalsFor - homeScore),
+      goalsAgainst: Math.max(0, homeFac.goalsAgainst - awayScore),
+      goalDifference: homeFac.goalDifference - (homeScore - awayScore),
+      points: Math.max(0, homeFac.points - (homeWon ? 3 : isDraw ? 1 : 0)),
+      currentStreak: 0, // Reset streak when reverting
+      updatedAt: new Date(),
+    }).where(eq(faculties.id, homeFacultyId));
+
+    // SUBTRACT from away faculty
+    await db.update(faculties).set({
+      played: Math.max(0, awayFac.played - 1),
+      won: Math.max(0, awayFac.won - (awayWon ? 1 : 0)),
+      drawn: Math. max(0, awayFac.drawn - (isDraw ? 1 : 0)),
+      lost: Math.max(0, awayFac.lost - (homeWon ? 1 : 0)),
+      goalsFor: Math.max(0, awayFac.goalsFor - awayScore),
+      goalsAgainst: Math.max(0, awayFac.goalsAgainst - homeScore),
+      goalDifference: awayFac.goalDifference - (awayScore - homeScore),
+      points: Math.max(0, awayFac. points - (awayWon ?  3 : isDraw ? 1 : 0)),
+      currentStreak: 0, // Reset streak when reverting
+      updatedAt: new Date(),
+    }).where(eq(faculties. id, awayFacultyId));
+
+  } catch (error) {
+    console.error('Error reversing faculty stats:', error);
+  }
+}
+
 export async function getMatch(matchId: number) {
   try {
-    const match = await db.query.matches.findFirst({
+    const match = await db.query.matches. findFirst({
       where: eq(matches.id, matchId),
       with: {
         homeFaculty: true,
@@ -246,32 +352,5 @@ export async function getMatch(matchId: number) {
   } catch (error) {
     console.error('Error fetching match:', error);
     return null;
-  }
-}
-
-export async function deleteMatch(matchId: number) {
-  try {
-    const session = await auth();
-    if (!  session || session.user.role !== 'admin') {
-      return { error: 'Unauthorized' };
-    }
-
-    await db.delete(matches).where(eq(matches.id, matchId));
-
-    await logAdminActivity(
-      session.user.id,
-      'DELETE_MATCH',
-      'MATCH',
-      matchId,
-      'Deleted match'
-    );
-
-    revalidatePath('/control-center');
-    revalidatePath('/control-center/matches');
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Delete match error:', error);
-    return { error: error.message || 'Failed to delete match' };
   }
 }

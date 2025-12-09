@@ -5,9 +5,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Get all MEN'S matches
+    // Get all WOMEN'S matches
     const allMatches = await db.query.matches.findMany({
-      where: eq(matches.category, 'men'), // ← ADD THIS LINE FOR MEN'S FILTER
+      where: eq(matches.category, 'women'), // ← FILTER FOR WOMEN ONLY
       with: {
         homeFaculty: true,
         awayFaculty: true,
@@ -32,7 +32,7 @@ export async function GET() {
     // Get all faculties
     const allFaculties = await db.query.faculties.findMany();
 
-    // Calculate standings from MEN'S COMPETITIVE MATCHES ONLY
+    // Calculate standings from WOMEN'S COMPETITIVE MATCHES ONLY
     const competitiveMatches = allMatches.filter(
       m => m.status === 'FINISHED' && m.importance !== 'Friendly'
     );
@@ -58,7 +58,7 @@ export async function GET() {
       });
     });
 
-    // Calculate from competitive men's matches
+    // Calculate from competitive women's matches
     competitiveMatches.forEach(match => {
       const homeTeam = standingsMap.get(match.homeFacultyId);
       const awayTeam = standingsMap.get(match.awayFacultyId);
@@ -133,9 +133,9 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Error fetching home data:', error);
+    console.error('Error fetching women data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch home data' },
+      { error: 'Failed to fetch women data' },
       { status: 500 }
     );
   }

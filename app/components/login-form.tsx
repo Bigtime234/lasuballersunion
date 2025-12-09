@@ -1,4 +1,4 @@
-"use client"
+""use client"
 
 import React from 'react';
 import { Trophy, ArrowLeft, CheckCircle, Zap, Flame, Activity } from 'lucide-react';
