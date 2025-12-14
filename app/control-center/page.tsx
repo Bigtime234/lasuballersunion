@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
+
 interface Match {
   id: number;
   status: 'PENDING' | 'LIVE' | 'FINISHED';
@@ -28,14 +29,14 @@ interface Match {
   matchMinute: number;
   archived: boolean;
   importance: string | null;
-  venue?: string;
-  homeFaculty: {
+  venue?:  string;
+  homeFaculty:  {
     id: number;
     name: string;
     abbreviation: string;
     colorPrimary: string;
   };
-  awayFaculty: {
+  awayFaculty:  {
     id: number;
     name: string;
     abbreviation: string;
@@ -75,7 +76,7 @@ interface DashboardData {
 
 interface AdminData {
   men: DashboardData;
-  women: DashboardData;
+  women:  DashboardData;
 }
 
 // ============================================
@@ -111,12 +112,12 @@ function CategoryTabs({ activeTab, onTabChange }: { activeTab: 'men' | 'women'; 
 // ============================================
 // IMPORTANCE BADGE
 // ============================================
-function ImportanceBadge({ importance }: { importance?: string | null }) {
+function ImportanceBadge({ importance }: { importance?:  string | null }) {
   if (!importance) return null;
 
-  const badgeConfig: Record<string, { bg: string; text: string; icon: string }> = {
+  const badgeConfig:  Record<string, { bg: string; text: string; icon: string }> = {
     Friendly: { bg: 'bg-gray-500/20', text: 'text-gray-400', icon: '⚽' },
-    League: { bg: 'bg-blue-500/20', text: 'text-blue-400', icon: '🏆' },
+    League: { bg: 'bg-blue-500/20', text:  'text-blue-400', icon: '🏆' },
     Cup: { bg: 'bg-purple-500/20', text: 'text-purple-400', icon: '🏆' },
     Finals: { bg: 'bg-amber-500/20', text: 'text-amber-400', icon: '👑' },
   };
@@ -136,14 +137,14 @@ function ImportanceBadge({ importance }: { importance?: string | null }) {
 function StatCard({
   label,
   value,
-  icon: Icon,
+  icon:  Icon,
   gradient,
   subtext,
-}: {
+}:  {
   label: string;
   value: string | number;
-  icon: React.ComponentType<any>;
-  gradient: string;
+  icon: React. ComponentType<any>;
+  gradient:  string;
   subtext: string;
 }) {
   return (
@@ -164,9 +165,9 @@ function StatCard({
 function LiveMatchCard({ match, category }: { match: Match; category: 'men' | 'women' }) {
   const borderColor = category === 'men' ? 'border-red-500/50' : 'border-pink-500/50';
   const shadowColor = category === 'men' ? 'shadow-red-500/20' : 'shadow-pink-500/20';
-  const gradientFrom = category === 'men' ?  'from-red-950' : 'from-pink-950';
+  const gradientFrom = category === 'men' ?   'from-red-950' : 'from-pink-950';
   const gradientTo = category === 'men' ? 'to-red-900' : 'to-pink-900';
-  const pulseColor = category === 'men' ?  'bg-red-500' : 'bg-pink-500';
+  const pulseColor = category === 'men' ?   'bg-red-500' : 'bg-pink-500';
 
   return (
     <div
@@ -251,7 +252,7 @@ function StandingsTable({ standings, category }: { standings: Faculty[]; categor
               >
                 <td className="px-6 py-4">
                   <span className="text-lg font-black">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    {index === 0 ? '🥇' : index === 1 ? '🥈' :  index === 2 ? '🥉' : `#${index + 1}`}
                   </span>
                 </td>
                 <td className="px-6 py-4">
@@ -317,7 +318,7 @@ function StandingsTable({ standings, category }: { standings: Faculty[]; categor
                   {faculty.abbreviation}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-white font-bold text-sm truncate">{faculty. name}</p>
+                  <p className="text-white font-bold text-sm truncate">{faculty.name}</p>
                   <p className="text-xs text-gray-500">{faculty.played} matches</p>
                 </div>
               </div>
@@ -388,7 +389,7 @@ function RecentResultCard({ match, category }: { match: Match; category: 'men' |
             className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
             style={{ backgroundColor: match.homeFaculty.colorPrimary }}
           >
-            {match.homeFaculty.abbreviation}
+            {match. homeFaculty.abbreviation}
           </div>
           <span className={`text-sm font-bold ${homeWon ? 'text-white' : 'text-gray-400'}`}>
             {match.homeFaculty.name}
@@ -409,7 +410,7 @@ function RecentResultCard({ match, category }: { match: Match; category: 'men' |
 
         <span
           className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
-            isDraw ?  'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+            isDraw ?   'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
           }`}
         >
           {isDraw ? 'Draw' : homeWon ? `${match.homeFaculty.abbreviation} Win` : `${match.awayFaculty.abbreviation} Win`}
@@ -422,9 +423,10 @@ function RecentResultCard({ match, category }: { match: Match; category: 'men' |
 // ============================================
 // MAIN CONTROL CENTER COMPONENT
 // ============================================
-export default function ControlCenterDashboard({ userName }: { userName?: string }) {
+export default function ControlCenterDashboard() {
   const [activeTab, setActiveTab] = useState<'men' | 'women'>('men');
   const [data, setData] = useState<AdminData | null>(null);
+  const [userName, setUserName] = useState<string>('Admin');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -444,7 +446,7 @@ export default function ControlCenterDashboard({ userName }: { userName?: string
           throw new Error('Failed to fetch dashboard data');
         }
 
-        const [menData, womenData] = await Promise.all([menRes. json(), womenRes.json()]);
+        const [menData, womenData] = await Promise.all([menRes.json(), womenRes.json()]);
 
         setData({
           men: menData,
@@ -499,7 +501,7 @@ export default function ControlCenterDashboard({ userName }: { userName?: string
     <div className="space-y-8">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-4xl font-black text-white mb-2">Welcome Back, {userName || 'Admin'}!  👋</h1>
+        <h1 className="text-4xl font-black text-white mb-2">Welcome Back, {userName || 'Admin'}!   👋</h1>
         <p className="text-gray-400 font-semibold">Manage sports tournaments for both men's and women's categories</p>
       </div>
 
@@ -582,13 +584,13 @@ export default function ControlCenterDashboard({ userName }: { userName?: string
       </div>
 
       {/* Live Matches Section */}
-      {currentData.liveMatches. length > 0 && (
+      {currentData.liveMatches.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-2xl font-black text-white flex items-center gap-2">
-            <Zap size={28} className={categoryColor === 'men' ? 'text-red-500' : 'text-pink-500'} />
+            <Zap size={28} className={activeTab === 'men' ? 'text-red-500' :  'text-pink-500'} />
             {categoryEmoji} Live Matches
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md: grid-cols-2 gap-4">
             {currentData. liveMatches.map((match) => (
               <LiveMatchCard key={match.id} match={match} category={activeTab} />
             ))}
@@ -616,16 +618,16 @@ export default function ControlCenterDashboard({ userName }: { userName?: string
                   <div className="flex items-center gap-2 flex-wrap justify-center">
                     <div
                       className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                      style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+                      style={{ backgroundColor: match.homeFaculty. colorPrimary }}
                     >
                       {match.homeFaculty.abbreviation}
                     </div>
-                    <span className="text-white font-bold text-sm hidden sm:inline">{match.homeFaculty.name}</span>
+                    <span className="text-white font-bold text-sm hidden sm:inline">{match.homeFaculty. name}</span>
                     <span className="text-gray-500">vs</span>
                     <span className="text-white font-bold text-sm hidden sm:inline">{match.awayFaculty.name}</span>
                     <div
                       className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                      style={{ backgroundColor: match. awayFaculty.colorPrimary }}
+                      style={{ backgroundColor: match.awayFaculty.colorPrimary }}
                     >
                       {match.awayFaculty.abbreviation}
                     </div>

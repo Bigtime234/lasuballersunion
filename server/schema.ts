@@ -82,6 +82,35 @@ export const seasons = pgTable('seasons', {
 });
 
 // ============================================
+// SEASON STANDINGS TABLE (NEW)
+// ============================================
+
+export const seasonStandings = pgTable('season_standings', {
+  id: serial('id').primaryKey(),
+  seasonId: integer('season_id').notNull().references(() => seasons.id, { onDelete: 'cascade' }),
+  facultyId: integer('faculty_id').notNull().references(() => faculties.id, { onDelete: 'cascade' }),
+  category: matchCategoryEnum('category').notNull(), // 'men' or 'women'
+  finalPosition: integer('final_position').notNull(), // 1st, 2nd, 3rd...
+  played: integer('played').notNull().default(0),
+  won: integer('won').notNull().default(0),
+  drawn: integer('drawn').notNull().default(0),
+  lost: integer('lost').notNull().default(0),
+  goalsFor: integer('goals_for').notNull().default(0),
+  goalsAgainst: integer('goals_against').notNull().default(0),
+  goalDifference: integer('goal_difference').notNull().default(0),
+  points: integer('points').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => {
+  return {
+    uniqueSeasonFacultyCategory: uniqueIndex('unique_season_faculty_category_idx').on(
+      table.seasonId,
+      table.facultyId,
+      table.category
+    ),
+  };
+});
+
+// ============================================
 // FACULTIES TABLE
 // ============================================
 
@@ -92,6 +121,8 @@ export const faculties = pgTable('faculties', {
   colorPrimary: text('color_primary').notNull().default('#3B82F6'),
   colorSecondary: text('color_secondary').notNull().default('#1E40AF'),
   logo: text('logo'),
+  // NOTE: These stats columns are kept for backward compatibility
+  // but are NOT used for display (calculated from matches instead)
   played: integer('played').notNull().default(0),
   won: integer('won').notNull().default(0),
   drawn: integer('drawn').notNull().default(0),
@@ -236,6 +267,18 @@ export const seasonsRelations = relations(seasons, ({ one, many }) => ({
     relationName: 'thirdPlaceSeasons',
   }),
   matches: many(matches),
+  standings: many(seasonStandings),
+}));
+
+export const seasonStandingsRelations = relations(seasonStandings, ({ one }) => ({
+  season: one(seasons, {
+    fields: [seasonStandings.seasonId],
+    references: [seasons.id],
+  }),
+  faculty: one(faculties, {
+    fields: [seasonStandings.facultyId],
+    references: [faculties.id],
+  }),
 }));
 
 export const facultiesRelations = relations(faculties, ({ many }) => ({
@@ -245,6 +288,7 @@ export const facultiesRelations = relations(faculties, ({ many }) => ({
   championSeasons: many(seasons, { relationName: 'championSeasons' }),
   runnerUpSeasons: many(seasons, { relationName: 'runnerUpSeasons' }),
   thirdPlaceSeasons: many(seasons, { relationName: 'thirdPlaceSeasons' }),
+  seasonStandings: many(seasonStandings),
 }));
 
 export const matchesRelations = relations(matches, ({ one, many }) => ({

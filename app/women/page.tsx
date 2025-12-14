@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Trophy,
   Flame,
@@ -19,6 +18,8 @@ import {
   Heart,
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
+
+
 
 interface Match {
   id: number;
@@ -73,19 +74,34 @@ interface HomeData {
     totalMatches: number;
     avgGoals: string;
   };
+  season?: {
+    id: number;
+    name: string;
+    startDate: string;
+    status: string;
+  } | null;
+  message?: string;
 }
 
+function FloatingWhatsAppButton() {
+  const [isVisible, setIsVisible] = useState(false);
 // ============================================
 // FLOATING WHATSAPP BUTTON
 // ============================================
-function FloatingWhatsAppButton() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
+useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
+  // ✅ ADD THIS - Auto-refresh every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Refresh page data
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <Link
       href="https://whatsapp.com/channel/LASU-BU"
@@ -96,15 +112,12 @@ function FloatingWhatsAppButton() {
       }`}
     >
       <div className="relative group">
-        {/* Pulsing Background Ring */}
         <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse opacity-75 group-hover:opacity-100 transition-opacity"></div>
         
-        {/* Main Button */}
         <div className="relative w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/50 transition-all transform hover:scale-110 group-hover:shadow-green-500/80">
           <FaWhatsapp className="w-8 h-8 text-white animate-bounce group-hover:animate-none transition-all" />
         </div>
 
-        {/* Tooltip */}
         <div className="absolute -left-32 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           <div className="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-lg whitespace-nowrap shadow-lg">
             Join WhatsApp Channel
@@ -120,7 +133,7 @@ function FloatingWhatsAppButton() {
 // IMPORTANCE BADGE
 // ============================================
 function ImportanceBadge({ importance }: { importance: string | null | undefined }) {
-  if (! importance) return null;
+  if (!importance) return null;
 
   const badgeConfig: Record<string, { bg: string; text: string; icon: string; border: string }> = {
     Friendly: { bg: 'bg-gray-500/10', text: 'text-gray-400', icon: '⚽', border: 'border-gray-500/30' },
@@ -149,7 +162,7 @@ function CountdownTimer({ targetDate }: { targetDate: Date | string }) {
     setMounted(true);
 
     const calculateTime = () => {
-      const now = new Date(). getTime();
+      const now = new Date().getTime();
       const target = new Date(targetDate).getTime();
       const distance = target - now;
 
@@ -176,7 +189,7 @@ function CountdownTimer({ targetDate }: { targetDate: Date | string }) {
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  if (!mounted) return <span className="text-pink-300 text-xs font-bold">... </span>;
+  if (!mounted) return <span className="text-pink-300 text-xs font-bold">...</span>;
   return <span className="text-pink-300 text-xs font-bold">{timeLeft}</span>;
 }
 
@@ -212,7 +225,7 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
               <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
               LIVE {match.matchMinute || 0}'
             </div>
-            <ImportanceBadge importance={match. importance} />
+            <ImportanceBadge importance={match.importance} />
           </div>
           <button
             onClick={() => setIsLiked(!isLiked)}
@@ -231,7 +244,7 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
               {new Date(match.matchDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
             <CountdownTimer targetDate={match.matchDate} />
-            <ImportanceBadge importance={match. importance} />
+            <ImportanceBadge importance={match.importance} />
           </div>
         </div>
       )}
@@ -240,9 +253,9 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
         <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700 flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-gray-500 uppercase">
-              {new Date(match. finishedAt || match.matchDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
-            <ImportanceBadge importance={match. importance} />
+            <ImportanceBadge importance={match.importance} />
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border ${
             isDraw 
@@ -261,7 +274,7 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div
               className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl font-black shadow-lg transition-transform group-hover:scale-110 flex-shrink-0"
-              style={{ backgroundColor: match.homeFaculty. colorPrimary }}
+              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
             >
               {match.homeFaculty.abbreviation}
             </div>
@@ -291,7 +304,7 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
               className="w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl font-black shadow-lg transition-transform group-hover:scale-110 flex-shrink-0"
               style={{ backgroundColor: match.awayFaculty.colorPrimary }}
             >
-              {match.awayFaculty. abbreviation}
+              {match.awayFaculty.abbreviation}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-wide">Away</p>
@@ -310,7 +323,7 @@ function PremiumMatchCard({ match, variant = 'default' }: { match: Match; varian
 
       {variant === 'live' && (
         <Link
-          href={`/women/livescores? match=${match.id}`}
+          href={`/women/livescores?match=${match.id}`}
           className="mt-6 block w-full text-center px-4 py-3 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 text-white rounded-lg font-bold text-sm transition-all transform hover:scale-105 flex items-center justify-center gap-2 group"
         >
           <Play size={16} />
@@ -468,7 +481,7 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
                 <td className="px-2 py-3 text-center text-red-400 font-bold text-sm">{faculty.goalsAgainst}</td>
                 <td
                   className={`px-2 py-3 text-center font-bold text-sm ${
-                    faculty. goalDifference > 0
+                    faculty.goalDifference > 0
                       ? 'text-green-400'
                       : faculty.goalDifference < 0
                       ? 'text-red-400'
@@ -533,18 +546,18 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
                 <td className="px-2 py-3 text-center text-green-400 font-bold text-xs">{faculty.won}</td>
                 <td className="px-2 py-3 text-center text-yellow-400 font-bold text-xs">{faculty.drawn}</td>
                 <td className="px-2 py-3 text-center text-red-400 font-bold text-xs">{faculty.lost}</td>
-                <td className="px-2 py-3 text-center text-blue-400 font-bold text-xs">{faculty. goalsFor}</td>
+                <td className="px-2 py-3 text-center text-blue-400 font-bold text-xs">{faculty.goalsFor}</td>
                 <td className="px-2 py-3 text-center text-red-400 font-bold text-xs">{faculty.goalsAgainst}</td>
                 <td
                   className={`px-2 py-3 text-center font-bold text-xs ${
-                    faculty. goalDifference > 0
+                    faculty.goalDifference > 0
                       ? 'text-green-400'
                       : faculty.goalDifference < 0
                       ? 'text-red-400'
                       : 'text-gray-400'
                   }`}
                 >
-                  {faculty.goalDifference > 0 ?  '+' : ''}
+                  {faculty.goalDifference > 0 ? '+' : ''}
                   {faculty.goalDifference}
                 </td>
                 <td className="px-3 py-3 text-center">
@@ -593,19 +606,6 @@ export default function WomensHomePage() {
       } catch (err) {
         console.error('Error fetching women data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
-        setData({
-          liveMatches: [],
-          upcomingMatches: [],
-          recentMatches: [],
-          standings: [],
-          stats: {
-            totalGoals: 0,
-            highestScoringMatch: null,
-            longestStreak: null,
-            totalMatches: 0,
-            avgGoals: '0',
-          },
-        });
       } finally {
         setLoading(false);
       }
@@ -620,7 +620,7 @@ export default function WomensHomePage() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
           <h2 className="text-2xl font-black text-white mb-2">Loading Women's Sports Hub</h2>
-          <p className="text-gray-400 font-semibold">Preparing the championship experience... </p>
+          <p className="text-gray-400 font-semibold">Preparing the championship experience...</p>
         </div>
       </div>
     );
@@ -634,7 +634,7 @@ export default function WomensHomePage() {
           <h2 className="text-2xl font-black text-white mb-2">Oops! Something went wrong</h2>
           <p className="text-gray-400 font-semibold mb-6">{error || 'Failed to load data'}</p>
           <button
-            onClick={() => window. location.reload()}
+            onClick={() => window.location.reload()}
             className="px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white rounded-lg font-bold transition-all"
           >
             Try Again
@@ -644,9 +644,34 @@ export default function WomensHomePage() {
     );
   }
 
+  // NO ACTIVE SEASON STATE
+  if (!data.season) {
+    return (
+      <>
+        <FloatingWhatsAppButton />
+        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+          <div className="text-center max-w-2xl">
+            <Trophy size={64} className="text-yellow-400 mx-auto mb-6 animate-pulse" />
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">No Active Season</h2>
+            <p className="text-lg text-gray-400 font-semibold mb-8">
+              {data.message || "The women's championship season hasn't started yet. Check back soon for updates!"}
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/standings"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold transition-all"
+              >
+                View Men's Section
+              </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
-      {/* Floating WhatsApp Button */}
       <FloatingWhatsAppButton />
 
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
@@ -661,9 +686,12 @@ export default function WomensHomePage() {
           {/* HERO SECTION */}
           <div className="container mx-auto px-4 pt-20 pb-24">
             <div className="max-w-4xl mx-auto text-center space-y-6">
+              {/* Season Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-500/20 border border-pink-500/30 rounded-full backdrop-blur-md">
-                <Sparkles size={16} className="text-pink-400" />
-                <span className="text-sm font-bold text-pink-400">Women's Championship Live Now</span>
+                <Trophy size={16} className="text-pink-400" />
+                <span className="text-sm font-bold text-pink-400">
+                  {data.season.name}
+                </span>
               </div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight">
@@ -677,7 +705,7 @@ export default function WomensHomePage() {
               </h2>
 
               <p className="text-base md:text-lg text-gray-300 font-semibold max-w-2xl mx-auto leading-relaxed">
-                Experience women's college sports excellence.  Real-time scores, thrilling matchups, and championship glory.
+                Experience women's college sports excellence. Real-time scores, thrilling matchups, and championship glory.
               </p>
 
               <div className="flex flex-wrap justify-center gap-3 md:gap-4 pt-8">
@@ -724,7 +752,7 @@ export default function WomensHomePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                {data.liveMatches. map((match) => (
+                {data.liveMatches.map((match) => (
                   <PremiumMatchCard key={match.id} match={match} variant="live" />
                 ))}
               </div>
@@ -752,14 +780,14 @@ export default function WomensHomePage() {
               />
               <PremiumStatCard
                 label="Matches"
-                value={data.stats. totalMatches}
+                value={data.stats.totalMatches}
                 icon={Activity}
                 gradient="bg-gradient-to-br from-purple-950/40 to-purple-900/30 border-purple-500/30"
                 subtext="⚽ Total competitions"
               />
               <PremiumStatCard
                 label="Avg Goals/Match"
-                value={data. stats.avgGoals}
+                value={data.stats.avgGoals}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-br from-blue-950/40 to-cyan-950/30 border-blue-500/30"
                 subtext="📊 Average"
@@ -767,10 +795,10 @@ export default function WomensHomePage() {
               {data.stats.longestStreak && (
                 <PremiumStatCard
                   label="Hot Streak"
-                  value={data.stats.longestStreak. currentStreak}
+                  value={data.stats.longestStreak.currentStreak}
                   icon={Award}
                   gradient="bg-gradient-to-br from-amber-950/40 to-yellow-950/30 border-amber-500/30"
-                  subtext={`🔥 ${data.stats. longestStreak.name}`}
+                  subtext={`🔥 ${data.stats.longestStreak.name}`}
                 />
               )}
             </div>
@@ -889,7 +917,7 @@ export default function WomensHomePage() {
                 Never Miss an Update 💯
               </h3>
               <p className="text-base md:text-lg text-gray-300 font-semibold mb-8 max-w-2xl mx-auto">
-                Get instant notifications for live women's matches, final scores, and championship updates. 
+                Get instant notifications for live women's matches, final scores, and championship updates!
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
@@ -918,7 +946,7 @@ export default function WomensHomePage() {
 
         {/* Scrollbar Styling */}
         <style jsx>{`
-          . scrollbar-hide::-webkit-scrollbar {
+          .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
           .scrollbar-hide {

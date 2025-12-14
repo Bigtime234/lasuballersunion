@@ -22,7 +22,7 @@ export default async function ControlCenterLayout({
     { label: 'Matches', href: '/control-center/matches', icon: Calendar },
     { label: 'Update Scores', href: '/control-center/scores', icon: Trophy },
     { label: 'Faculties', href: '/control-center/faculties', icon: Users },
-    { label: 'Reports', href: '/control-center/reports', icon: BarChart3 },
+    { label: 'Create Season', href: '/control-center/seasons', icon: BarChart3 },
   ];
 
   return (

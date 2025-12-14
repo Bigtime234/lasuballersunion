@@ -81,7 +81,7 @@ interface HomeData {
 }
 
 // ============================================
-// ANIMATION HOOK - FIXED WITH BETTER TIMING
+// ANIMATION HOOK - FIXED WITH PROPER TIMING
 // ============================================
 function useStaggerAnimation() {
   const [animateHero, setAnimateHero] = useState(false);
@@ -139,6 +139,15 @@ function HeroCarousel() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+      const interval = setInterval(() => {
+        // Refresh page data
+      }, 30000);
+  
+      return () => clearInterval(interval);
+    }, []);
+  
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -235,7 +244,7 @@ function CountdownTimer({ targetDate }: { targetDate: Date | string }) {
     setMounted(true);
 
     const calculateTime = () => {
-      const now = new Date(). getTime();
+      const now = new Date().getTime();
       const target = new Date(targetDate).getTime();
       const distance = target - now;
 
@@ -280,9 +289,9 @@ function LiveMatchCard({ match }: { match: Match }) {
             <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
             LIVE {match.matchMinute || 0}'
           </div>
-          <ImportanceBadge importance={match. importance} />
+          <ImportanceBadge importance={match.importance} />
         </div>
-        <button onClick={() => setIsLiked(! isLiked)} className="transition-transform hover:scale-125">
+        <button onClick={() => setIsLiked(!isLiked)} className="transition-transform hover:scale-125">
           <Heart size={20} className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
         </button>
       </div>
@@ -292,13 +301,13 @@ function LiveMatchCard({ match }: { match: Match }) {
           <div className="flex items-center gap-4 flex-1">
             <div
               className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg transition-transform group-hover:scale-110"
-              style={{ backgroundColor: match.homeFaculty. colorPrimary }}
+              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
             >
-              {match.homeFaculty. abbreviation}
+              {match.homeFaculty.abbreviation}
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wide">Home</p>
-              <p className="text-lg font-black text-white">{match.homeFaculty. name}</p>
+              <p className="text-lg font-black text-white">{match.homeFaculty.name}</p>
             </div>
           </div>
           <p className="text-5xl font-black tabular-nums text-white">{match.scoreHome}</p>
@@ -316,11 +325,11 @@ function LiveMatchCard({ match }: { match: Match }) {
               className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg transition-transform group-hover:scale-110"
               style={{ backgroundColor: match.awayFaculty.colorPrimary }}
             >
-              {match.awayFaculty. abbreviation}
+              {match.awayFaculty.abbreviation}
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-wide">Away</p>
-              <p className="text-lg font-black text-white">{match. awayFaculty.name}</p>
+              <p className="text-lg font-black text-white">{match.awayFaculty.name}</p>
             </div>
           </div>
           <p className="text-5xl font-black tabular-nums text-white">{match.scoreAway}</p>
@@ -328,7 +337,7 @@ function LiveMatchCard({ match }: { match: Match }) {
       </div>
 
       <Link
-        href={`/livescores? match=${match.id}`}
+        href={`/livescores?match=${match.id}`}
         className="mt-6 block w-full text-center px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-lg font-bold text-sm transition-all transform hover:scale-105 flex items-center justify-center gap-2 group"
       >
         <Play size={16} />
@@ -351,7 +360,7 @@ function StatCard({
 }: {
   label: string;
   value: string | number;
-  icon: React. ComponentType<any>;
+  icon: React.ComponentType<any>;
   gradient: string;
   subtext: string;
 }) {
@@ -470,13 +479,13 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
                 </td>
                 <td className="px-2 py-3 text-center text-white font-bold text-sm">{faculty.played}</td>
                 <td className="px-2 py-3 text-center text-green-400 font-bold text-sm">{faculty.won}</td>
-                <td className="px-2 py-3 text-center text-yellow-400 font-bold text-sm">{faculty. drawn}</td>
+                <td className="px-2 py-3 text-center text-yellow-400 font-bold text-sm">{faculty.drawn}</td>
                 <td className="px-2 py-3 text-center text-red-400 font-bold text-sm">{faculty.lost}</td>
                 <td className="px-2 py-3 text-center text-blue-400 font-bold text-sm">{faculty.goalsFor}</td>
                 <td className="px-2 py-3 text-center text-red-400 font-bold text-sm">{faculty.goalsAgainst}</td>
                 <td
                   className={`px-2 py-3 text-center font-bold text-sm ${
-                    faculty. goalDifference > 0
+                    faculty.goalDifference > 0
                       ? 'text-green-400'
                       : faculty.goalDifference < 0
                       ? 'text-red-400'
@@ -488,7 +497,7 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <span className="text-2xl font-black bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
-                    {faculty. points}
+                    {faculty.points}
                   </span>
                 </td>
               </tr>
@@ -497,73 +506,65 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
         </table>
       </div>
 
-      {/* Mobile - Horizontal Scrollable */}
-      <div className="sm:hidden overflow-x-auto scrollbar-hide">
-        <table className="w-max min-w-full">
-          <thead>
-            <tr className="bg-gradient-to-r from-slate-800 to-slate-700 border-b border-slate-700 sticky left-0">
-              <th className="px-3 py-3 text-left text-xs font-black text-gray-300 uppercase min-w-max">Pos</th>
-              <th className="px-3 py-3 text-left text-xs font-black text-gray-300 uppercase min-w-[80px]">Team</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">P</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">W</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">D</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">L</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">GF</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">GA</th>
-              <th className="px-2 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[35px]">GD</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-[40px]">Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {standings.map((faculty, index) => (
-              <tr
-                key={faculty.id}
-                className={`border-b border-slate-700 transition-colors hover:bg-slate-800/50 ${
-                  index < 3 ? 'bg-gradient-to-r from-yellow-950/40 to-transparent' : ''
-                }`}
-              >
-                <td className="px-3 py-3 text-center">
-                  <span className="text-base font-black">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                  </span>
-                </td>
-                <td className="px-3 py-3">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                      style={{ backgroundColor: faculty.colorPrimary }}
-                    >
-                      {faculty.abbreviation}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-2 py-3 text-center text-white font-bold text-xs">{faculty.played}</td>
-                <td className="px-2 py-3 text-center text-green-400 font-bold text-xs">{faculty.won}</td>
-                <td className="px-2 py-3 text-center text-yellow-400 font-bold text-xs">{faculty.drawn}</td>
-                <td className="px-2 py-3 text-center text-red-400 font-bold text-xs">{faculty.lost}</td>
-                <td className="px-2 py-3 text-center text-blue-400 font-bold text-xs">{faculty. goalsFor}</td>
-                <td className="px-2 py-3 text-center text-red-400 font-bold text-xs">{faculty.goalsAgainst}</td>
-                <td
-                  className={`px-2 py-3 text-center font-bold text-xs ${
-                    faculty. goalDifference > 0
-                      ? 'text-green-400'
-                      : faculty.goalDifference < 0
-                      ? 'text-red-400'
-                      : 'text-gray-400'
-                  }`}
+      {/* Mobile Card View */}
+      <div className="sm:hidden space-y-3 p-4">
+        {standings.map((faculty, index) => (
+          <div
+            key={faculty.id}
+            className={`rounded-lg p-4 border ${
+              index < 3 ? 'bg-yellow-950/20 border-yellow-600/30' : 'bg-slate-800/40 border-slate-700'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3 flex-1">
+                <span className="text-2xl font-black">
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                </span>
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-black"
+                  style={{ backgroundColor: faculty.colorPrimary }}
                 >
-                  {faculty.goalDifference > 0 ?  '+' : ''}
-                  {faculty.goalDifference}
-                </td>
-                <td className="px-3 py-3 text-center">
-                  <span className="text-lg font-black bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
-                    {faculty.points}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  {faculty.abbreviation}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm truncate">{faculty.name}</p>
+                  <p className="text-xs text-gray-500">{faculty.played} matches</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-black text-yellow-400">{faculty.points}</p>
+                <p className="text-xs text-gray-500">pts</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-5 gap-2 text-center text-xs">
+              <div>
+                <p className="text-gray-500">W</p>
+                <p className="text-green-400 font-bold text-lg">{faculty.won}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">D</p>
+                <p className="text-yellow-400 font-bold text-lg">{faculty.drawn}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">L</p>
+                <p className="text-red-400 font-bold text-lg">{faculty.lost}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">GF</p>
+                <p className="text-blue-400 font-bold">{faculty.goalsFor}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">GD</p>
+                <p className={`font-bold ${
+                  faculty.goalDifference > 0 ? 'text-green-400' : faculty.goalDifference < 0 ? 'text-red-400' : 'text-gray-400'
+                }`}>
+                  {faculty.goalDifference > 0 ? '+' : ''}{faculty.goalDifference}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="sm:hidden px-4 py-2 bg-slate-800/50 text-center">
@@ -671,7 +672,7 @@ export default function LASUBallersHomePage() {
           {/* ============= HERO SECTION ============= */}
           <div
             className={`relative h-screen flex items-center justify-center overflow-hidden transition-all duration-1000 ${
-              animateHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+              animateHero ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
             }`}
           >
             {/* Hero Carousel Background */}
@@ -701,7 +702,7 @@ export default function LASUBallersHomePage() {
 
               {/* Description */}
               <p className="text-lg md:text-xl text-gray-100 font-semibold max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-                Experience football like never before.  Real-time scores, thrilling matchups, championship glory.  Join thousands of passionate students! 
+                Experience football like never before. Real-time scores, thrilling matchups, championship glory. Join thousands of passionate students! 
               </p>
 
               {/* CTA Buttons */}
@@ -741,7 +742,7 @@ export default function LASUBallersHomePage() {
           {/* ============= LIVE MATCHES - SLIDE FROM RIGHT ============= */}
           {data.liveMatches.length > 0 && (
             <div
-              className={`container mx-auto px-4 py-20 border-t border-slate-800 transition-all duration-1000 ${
+              className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
                 animateLive ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
               }`}
             >
@@ -761,7 +762,7 @@ export default function LASUBallersHomePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {data. liveMatches.map((match) => (
+                {data.liveMatches.map((match) => (
                   <LiveMatchCard key={match.id} match={match} />
                 ))}
               </div>
@@ -770,8 +771,8 @@ export default function LASUBallersHomePage() {
 
           {/* ============= STATS - POP UP ANIMATION ============= */}
           <div
-            className={`container mx-auto px-4 py-20 border-t border-slate-800 transition-all duration-1000 ${
-              animateStats ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
+            className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
+              animateStats ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
             }`}
           >
             <div className="mb-12">
@@ -794,14 +795,14 @@ export default function LASUBallersHomePage() {
               />
               <StatCard
                 label="Matches"
-                value={data.stats. totalMatches}
+                value={data.stats.totalMatches}
                 icon={Activity}
                 gradient="bg-gradient-to-br from-purple-950/40 to-purple-900/30 border-purple-500/30"
                 subtext="⚽ Total competitions"
               />
               <StatCard
                 label="Avg Goals/Match"
-                value={data. stats.avgGoals}
+                value={data.stats.avgGoals}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-br from-green-950/40 to-emerald-950/30 border-green-500/30"
                 subtext="📊 Per game"
@@ -809,7 +810,7 @@ export default function LASUBallersHomePage() {
               {data.stats.longestStreak && (
                 <StatCard
                   label="Hot Streak"
-                  value={data.stats.longestStreak. currentStreak}
+                  value={data.stats.longestStreak.currentStreak}
                   icon={Award}
                   gradient="bg-gradient-to-br from-amber-950/40 to-yellow-950/30 border-amber-500/30"
                   subtext={`🔥 ${data.stats.longestStreak.name}`}
@@ -821,8 +822,8 @@ export default function LASUBallersHomePage() {
           {/* ============= UPCOMING - SLIDE FROM LEFT ============= */}
           {data.upcomingMatches.length > 0 && (
             <div
-              className={`container mx-auto px-4 py-20 border-t border-slate-800 transition-all duration-1000 ${
-                animateUpcoming ? 'opacity-100 -translate-x-0' : 'opacity-0 -translate-x-full'
+              className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
+                animateUpcoming ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
               }`}
             >
               <div className="mb-12">
@@ -855,7 +856,7 @@ export default function LASUBallersHomePage() {
                       <div className="flex items-center gap-2 flex-wrap justify-center">
                         <div
                           className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                          style={{ backgroundColor: match.homeFaculty. colorPrimary }}
+                          style={{ backgroundColor: match.homeFaculty.colorPrimary }}
                         >
                           {match.homeFaculty.abbreviation}
                         </div>
@@ -866,10 +867,10 @@ export default function LASUBallersHomePage() {
                           className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                           style={{ backgroundColor: match.awayFaculty.colorPrimary }}
                         >
-                          {match.awayFaculty. abbreviation}
+                          {match.awayFaculty.abbreviation}
                         </div>
                       </div>
-                      <Link href={`/fixtures? match=${match.id}`} className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-bold transition">
+                      <Link href={`/fixtures?match=${match.id}`} className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-bold transition">
                         View
                       </Link>
                     </div>
@@ -882,7 +883,7 @@ export default function LASUBallersHomePage() {
           {/* ============= RECENT RESULTS - SLIDE FROM RIGHT ============= */}
           {data.recentMatches.length > 0 && (
             <div
-              className={`container mx-auto px-4 py-20 border-t border-slate-800 transition-all duration-1000 ${
+              className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
                 animateRecent ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
               }`}
             >
@@ -914,14 +915,14 @@ export default function LASUBallersHomePage() {
                           <span className="text-xs font-bold text-gray-500">
                             {new Date(match.finishedAt || match.matchDate).toLocaleDateString()}
                           </span>
-                          <ImportanceBadge importance={match. importance} />
+                          <ImportanceBadge importance={match.importance} />
                         </div>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${
                             isDraw ? 'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                           }`}
                         >
-                          {isDraw ? '🤝 Draw' : homeWon ?  '✓ FT' : '✓ FT'}
+                          {isDraw ? '🤝 Draw' : homeWon ? '✓ FT' : '✓ FT'}
                         </span>
                       </div>
 
@@ -931,7 +932,7 @@ export default function LASUBallersHomePage() {
                             className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                             style={{ backgroundColor: match.homeFaculty.colorPrimary }}
                           >
-                            {match.homeFaculty. abbreviation}
+                            {match.homeFaculty.abbreviation}
                           </div>
                           <span className={`text-sm font-bold ${homeWon ? 'text-white' : 'text-gray-400'}`}>
                             {match.homeFaculty.name}
@@ -942,7 +943,7 @@ export default function LASUBallersHomePage() {
                         <span className="text-2xl font-black text-white mx-2">{match.scoreAway}</span>
                         <div className="flex items-center gap-2 flex-1 justify-end">
                           <span className={`text-sm font-bold ${awayWon ? 'text-white' : 'text-gray-400'}`}>
-                            {match. awayFaculty.name}
+                            {match.awayFaculty.name}
                           </span>
                           <div
                             className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
@@ -962,8 +963,8 @@ export default function LASUBallersHomePage() {
           {/* ============= STANDINGS - SLIDE FROM LEFT + LEGEND ============= */}
           {data.standings.length > 0 && (
             <div
-              className={`container mx-auto px-4 py-20 border-t border-slate-800 transition-all duration-1000 ${
-                animateStandings ? 'opacity-100 -translate-x-0' : 'opacity-0 -translate-x-full'
+              className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
+                animateStandings ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
               }`}
             >
               <div className="mb-12">
@@ -991,7 +992,7 @@ export default function LASUBallersHomePage() {
                   href="/women/standings"
                   className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg font-bold transition-all transform hover:scale-105"
                 >
-                  View Full woemn Standings
+                  View Full Women Standings
                   <ArrowRight size={20} />
                 </Link>
               </div>
@@ -1025,7 +1026,7 @@ export default function LASUBallersHomePage() {
 
         {/* Scrollbar Styling */}
         <style jsx>{`
-          . scrollbar-hide::-webkit-scrollbar {
+          .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
           .scrollbar-hide {

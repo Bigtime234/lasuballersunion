@@ -1,17 +1,45 @@
 import { db } from '@/server';
-import { matches, faculties } from '@/server/schema';
+import { matches, faculties, seasons } from '@/server/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Get all MEN'S matches
-    const allMatches = await db.query.matches.findMany({
-      where: eq(matches.category, 'men'), // ← ADD THIS LINE FOR MEN'S FILTER
+    // Get active season
+    const activeSeason = await db.query.seasons.findFirst({
+      where: eq(seasons.status, 'ACTIVE'),
+      orderBy: desc(seasons.startDate),
+    });
+
+    if (!activeSeason) {
+      return NextResponse.json({
+        liveMatches: [],
+        upcomingMatches: [],
+        recentMatches: [],
+        standings: [],
+        stats: {
+          totalGoals: 0,
+          highestScoringMatch: null,
+          longestStreak: null,
+          totalMatches: 0,
+          avgGoals: '0',
+        },
+        season: null,
+        message: 'No active season found',
+      });
+    }
+
+    // Get all MEN'S matches for ACTIVE SEASON ONLY
+    const allMatches = await db.query. matches.findMany({
+      where: and(
+        eq(matches.category, 'men'),
+        eq(matches.seasonId, activeSeason.id)
+      ),
       with: {
         homeFaculty: true,
         awayFaculty: true,
       },
+      orderBy:  desc(matches.matchDate), // ✅ SORT BY DATE FOR STREAK CALC
     });
 
     // Get live matches
@@ -19,31 +47,71 @@ export async function GET() {
 
     // Get upcoming matches (next 5)
     const upcomingMatches = allMatches
-      .filter(m => m.status === 'PENDING')
+      .filter(m => m. status === 'PENDING')
       .sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime())
       .slice(0, 5);
 
     // Get recent finished matches (last 6) - ONLY COMPETITIVE MATCHES
     const recentMatches = allMatches
-      .filter(m => m.status === 'FINISHED' && !m.archived && m.importance !== 'Friendly')
+      . filter(m => m.status === 'FINISHED' && ! m.archived && m.importance !== 'Friendly')
       .sort((a, b) => new Date(b.finishedAt || 0).getTime() - new Date(a.finishedAt || 0).getTime())
       .slice(0, 6);
 
     // Get all faculties
     const allFaculties = await db.query.faculties.findMany();
 
-    // Calculate standings from MEN'S COMPETITIVE MATCHES ONLY
-    const competitiveMatches = allMatches.filter(
+    // Calculate standings from MEN'S COMPETITIVE MATCHES IN ACTIVE SEASON ONLY
+    const competitiveMatches = allMatches. filter(
       m => m.status === 'FINISHED' && m.importance !== 'Friendly'
     );
+
+    // ✅ HELPER FUNCTION TO CALCULATE STREAK
+    function calculateStreak(facultyId: number, matches: typeof competitiveMatches) {
+      let streak = 0;
+      let streakType:  'W' | 'D' | null = null;
+
+      // Go through matches from most recent backwards
+      for (const match of matches) {
+        const isHome = match.homeFacultyId === facultyId;
+        const isAway = match.awayFacultyId === facultyId;
+
+        if (! isHome && !isAway) continue;
+
+        const won = isHome 
+          ? match.scoreHome > match.scoreAway 
+          : match.scoreAway > match.scoreHome;
+        
+        const drawn = match.scoreHome === match.scoreAway;
+
+        if (won) {
+          if (streakType === 'W' || streakType === null) {
+            streakType = 'W';
+            streak++;
+          } else {
+            break; // Streak ended
+          }
+        } else if (drawn) {
+          if (streakType === 'D' || streakType === null) {
+            streakType = 'D';
+            streak++;
+          } else {
+            break; // Streak ended
+          }
+        } else {
+          break; // Loss ends streak
+        }
+      }
+
+      return streak;
+    }
 
     // Build standings
     const standingsMap = new Map();
 
     allFaculties.forEach(faculty => {
       standingsMap.set(faculty.id, {
-        id: faculty.id,
-        name: faculty.name,
+        id: faculty. id,
+        name: faculty. name,
         abbreviation: faculty.abbreviation,
         colorPrimary: faculty.colorPrimary,
         played: 0,
@@ -53,15 +121,15 @@ export async function GET() {
         goalsFor: 0,
         goalsAgainst: 0,
         goalDifference: 0,
-        points: 0,
+        points:  0,
         currentStreak: 0,
       });
     });
 
-    // Calculate from competitive men's matches
+    // Calculate from competitive men's matches in active season
     competitiveMatches.forEach(match => {
       const homeTeam = standingsMap.get(match.homeFacultyId);
-      const awayTeam = standingsMap.get(match.awayFacultyId);
+      const awayTeam = standingsMap.get(match. awayFacultyId);
 
       if (homeTeam && awayTeam) {
         homeTeam.played++;
@@ -72,16 +140,16 @@ export async function GET() {
         awayTeam.goalsFor += match.scoreAway;
         awayTeam.goalsAgainst += match.scoreHome;
 
-        if (match.scoreHome > match.scoreAway) {
-          homeTeam.won++;
-          homeTeam.points += 3;
+        if (match. scoreHome > match.scoreAway) {
+          homeTeam. won++;
+          homeTeam. points += 3;
           awayTeam.lost++;
         } else if (match.scoreHome < match.scoreAway) {
           awayTeam.won++;
-          awayTeam.points += 3;
+          awayTeam. points += 3;
           homeTeam.lost++;
         } else {
-          homeTeam.drawn++;
+          homeTeam. drawn++;
           awayTeam.drawn++;
           homeTeam.points += 1;
           awayTeam.points += 1;
@@ -92,12 +160,17 @@ export async function GET() {
       }
     });
 
+    // ✅ NOW CALCULATE STREAKS AFTER ALL STATS
+    standingsMap.forEach((team) => {
+      team.currentStreak = calculateStreak(team.id, competitiveMatches);
+    });
+
     const standings = Array.from(standingsMap.values())
       .filter(team => team.played > 0)
       .sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
-        return b.goalsFor - a.goalsFor;
+        if (b.points !== a.points) return b.points - a. points;
+        if (b. goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+        return b. goalsFor - a.goalsFor;
       });
 
     // Calculate stats
@@ -107,12 +180,17 @@ export async function GET() {
     );
 
     const highestScoringMatch = competitiveMatches.reduce((max, match) => {
-      const total = match.scoreHome + match.scoreAway;
+      const total = match.scoreHome + match. scoreAway;
       const maxTotal = max ? max.scoreHome + max.scoreAway : 0;
       return total > maxTotal ? match : max;
     }, competitiveMatches[0] || null);
 
-    const longestStreak = standings.length > 0 ? standings[0] : null;
+    // ✅ FIND TEAM WITH LONGEST STREAK (not just the leader)
+    const longestStreak = standings.length > 0 
+      ? standings. reduce((max, team) => 
+          team.currentStreak > (max?. currentStreak || 0) ? team : max
+        ) 
+      : null;
 
     const stats = {
       totalGoals,
@@ -130,6 +208,12 @@ export async function GET() {
       recentMatches,
       standings,
       stats,
+      season: {
+        id: activeSeason.id,
+        name: activeSeason.name,
+        startDate: activeSeason.startDate,
+        status: activeSeason.status,
+      },
     });
 
   } catch (error) {

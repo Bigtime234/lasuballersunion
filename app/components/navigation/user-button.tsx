@@ -119,7 +119,7 @@ export const UserButton = ({ user: initialUser }: Session) => {
 
           {/* Profile */}
           <DropdownMenuItem
-            onClick={() => router.push("/dashboard/profile")}
+            onClick={() => router.push("/women")}
             className="group py-3 px-4 rounded-lg cursor-pointer focus:bg-slate-900 focus:text-white transition-all duration-200"
           >
             <div className="flex items-center gap-4">
@@ -127,15 +127,15 @@ export const UserButton = ({ user: initialUser }: Session) => {
                 <User size={18} />
               </div>
               <div>
-                <p className="font-bold text-slate-200 group-hover:text-white">Player Profile</p>
-                <p className="text-xs text-slate-500 group-hover:text-slate-300">Edit stats & avatar</p>
+                <p className="font-bold text-slate-200 group-hover:text-white">Womens page</p>
+                <p className="text-xs text-slate-500 group-hover:text-slate-300">view womens page</p>
               </div>
             </div>
           </DropdownMenuItem>
 
           {/* My Teams (Was Appointments) */}
           <DropdownMenuItem
-            onClick={() => router.push("/my-teams")}
+            onClick={() => router.push("/livescorespagenav")}
             className="group py-3 px-4 rounded-lg cursor-pointer focus:bg-slate-900 focus:text-white transition-all duration-200"
           >
             <div className="flex items-center gap-4">
@@ -143,27 +143,14 @@ export const UserButton = ({ user: initialUser }: Session) => {
                 <Trophy size={18} />
               </div>
               <div>
-                <p className="font-bold text-slate-200 group-hover:text-white">My Teams</p>
-                <p className="text-xs text-slate-500 group-hover:text-slate-300">Followed faculties</p>
+                <p className="font-bold text-slate-200 group-hover:text-white">Live scores</p>
+                <p className="text-xs text-slate-500 group-hover:text-slate-300">View live scores</p>
               </div>
             </div>
           </DropdownMenuItem>
 
           {/* Settings */}
-          <DropdownMenuItem
-            onClick={() => router.push("/dashboard/settings")}
-            className="group py-3 px-4 rounded-lg cursor-pointer focus:bg-slate-900 focus:text-white transition-all duration-200"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-slate-900 rounded-lg group-hover:bg-slate-700 group-hover:text-white transition-colors duration-200 text-slate-400 border border-slate-800">
-                <Settings size={18} />
-              </div>
-              <div>
-                <p className="font-bold text-slate-200 group-hover:text-white">Preferences</p>
-                <p className="text-xs text-slate-500 group-hover:text-slate-300">Notifications & Theme</p>
-              </div>
-            </div>
-          </DropdownMenuItem>
+          
 
           <DropdownMenuSeparator className="bg-slate-800 my-2" />
 

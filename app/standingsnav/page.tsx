@@ -3,6 +3,8 @@ import { faculties, matches } from '@/server/schema';
 import { desc, eq, and, or } from 'drizzle-orm';
 import { Trophy } from 'lucide-react';
 
+export const revalidate = 30; // Revalidate every 30 seconds
+
 export default async function StandingsPage() {
   // Get all faculties sorted by points (only from competitive matches)
   const allFaculties = await db.query.faculties.findMany({
