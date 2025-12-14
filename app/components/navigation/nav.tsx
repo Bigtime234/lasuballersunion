@@ -60,7 +60,6 @@ const Header: React.FC = () => {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Live Scores', href: '/livescorespagenav', icon: Zap, badge: 'LIVE' },
     { label: 'Fixtures', href: '/fixturespagenav', icon: Calendar },
-    { label: 'Faculties', href: '/faculties', icon: Users },
   ];
 
   const womensDropdownItems: DropdownItem[] = [

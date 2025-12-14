@@ -122,9 +122,9 @@ function HeroCarousel() {
   const [fadeOut, setFadeOut] = useState(false);
 
   const images = [
-    '/hero1.jpg',
-    '/hero2.jpg',
-    '/hero3.jpg',
+    '/fav.jpg',
+    '/hero-new2.jpg',
+    '/hero-new.jpg',
   ];
 
   useEffect(() => {
