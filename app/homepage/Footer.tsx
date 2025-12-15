@@ -73,7 +73,7 @@ const Footer = () => {
                 </span>
               </div>
               <div className="text-xs font-semibold text-slate-400 tracking-wide">
-                Student Union Government • Sports Directorate
+                Student Union  • Sports Directorate
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@ const Footer = () => {
                 <div className="flex gap-2 bg-slate-900/50 p-1 rounded-lg border border-slate-800 hover:border-amber-500/50 transition-colors">
                   <input 
                     type="email" 
-                    placeholder="your@email.com" 
+                    placeholder="lasuballersunion@gmail.com" 
                     className="bg-transparent flex-1 text-sm text-white placeholder-slate-500 outline-none px-3 py-2"
                   />
                   <button className="bg-linear-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white p-2 rounded-md transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/50 transform hover:scale-105">
@@ -195,7 +195,7 @@ const Footer = () => {
                 ))}
                 <li className="pt-2">
                   <Link 
-                    href="/faculties" 
+                    href="/" 
                     className="text-xs font-black text-amber-500 hover:text-amber-400 flex items-center gap-1. 5 group"
                   >
                     VIEW ALL 
@@ -220,7 +220,7 @@ const Footer = () => {
                       <MapPin size={16} className="text-amber-500" />
                     </div>
                     <span className="text-sm text-slate-400 group-hover:text-white transition-colors">
-                      Sports Complex, LASU Ojo<br/>Lagos State, Nigeria
+                      Sports center LASU Ojo<br/>Lagos State, Nigeria
                     </span>
                   </div>
 
@@ -229,7 +229,7 @@ const Footer = () => {
                       <Phone size={16} className="text-orange-500" />
                     </div>
                     <span className="text-sm text-slate-400 group-hover:text-white transition-colors">
-                      +234 (0) 123 456 7890
+                      +2348125966950
                     </span>
                   </a>
 
@@ -238,7 +238,7 @@ const Footer = () => {
                       <Mail size={16} className="text-red-500" />
                     </div>
                     <span className="text-sm text-slate-400 group-hover:text-white transition-colors">
-                      sports@lasu.edu.ng
+                      sports@lasu
                     </span>
                   </a>
                 </div>
@@ -287,12 +287,12 @@ const Footer = () => {
                 Built with <span className="text-amber-400 font-bold">❤️</span> by
               </span>
               <a 
-                href="https://github. com/Bigtime234" 
+                href="/" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-bold text-white hover:text-amber-400 transition-colors"
               >
-                Bigtime234
+                @codebyriven
               </a>
             </div>
           </div>
