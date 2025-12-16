@@ -104,7 +104,7 @@ useEffect(() => {
   
   return (
     <Link
-      href="https://whatsapp.com/channel/LASU-BU"
+      href="/"
       target="_blank"
       rel="noopener noreferrer"
       className={`fixed right-6 bottom-8 z-40 transition-all duration-700 transform ${
@@ -921,7 +921,7 @@ export default function WomensHomePage() {
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href="https://whatsapp.com/channel/LASU-BU"
+                  href="/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-black text-sm md:text-base transition-all transform hover:scale-110 shadow-lg shadow-green-500/30"

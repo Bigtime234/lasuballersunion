@@ -174,7 +174,7 @@ function FloatingWhatsAppButton() {
 
   return (
     <Link
-      href="https://whatsapp.com/channel/LASU-BU"
+      href="/"
       target="_blank"
       rel="noopener noreferrer"
       className={`fixed right-6 bottom-8 z-40 transition-all duration-700 transform ${
@@ -679,11 +679,11 @@ export default function LASUBallersHomePage() {
                   🔴 Live Scores
                 </Link>
                 <Link
-                  href="/standings"
+                  href="/"
                   className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl text-lg font-black shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/70 transition-all transform hover:scale-110 hover:-translate-y-1 flex items-center gap-3"
                 >
                   <Trophy size={24} className="group-hover:animate-bounce" />
-                  🏆 Rankings
+                  🏆 Mens page
                 </Link>
                 <Link
                   href="/fixturespagenav"
@@ -986,7 +986,7 @@ export default function LASUBallersHomePage() {
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href="https://whatsapp.com/channel/LASU-BU"
+                  href="/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-black transition-all transform hover:scale-110 shadow-lg shadow-green-500/30"
@@ -999,7 +999,7 @@ export default function LASUBallersHomePage() {
                   className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black transition-all transform hover:scale-110 border border-slate-700"
                 >
                   <Trophy size={20} />
-                  See women standings Standings
+                  See women standings 
                 </Link>
               </div>
             </div>

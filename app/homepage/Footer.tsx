@@ -36,11 +36,11 @@ const Footer = () => {
   ];
 
   const quickLinks = [
-    { name: 'Live Scores', path: '/live' },
-    { name: 'Standings', path: '/standings' },
-    { name: 'Fixtures', path: '/fixtures' },
-    { name: 'Statistics', path: '/stats' },
-    { name: 'Top Scorers', path: '/top-scorers' },
+    { name: 'Live Scores', path: '/' },
+    { name: 'Standings', path: '/' },
+    { name: 'Fixtures', path: '/' },
+    { name: 'Statistics', path: '/' },
+    { name: 'Top Scorers', path: '/' },
   ];
 
   const socialLinks = [
