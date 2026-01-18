@@ -371,55 +371,151 @@ function StandingsTable({ standings, category }: { standings: Faculty[]; categor
 // ============================================
 function RecentResultCard({ match, category }: { match: Match; category: 'men' | 'women' }) {
   const homeWon = match.scoreHome > match.scoreAway;
-  const awayWon = match.scoreAway > match.scoreHome;
-  const isDraw = match.scoreHome === match.scoreAway;
+  const awayWon = match. scoreAway > match.scoreHome;
+  const isDraw = match.scoreHome === match. scoreAway;
+
+  const getBgGradient = () => {
+    if (homeWon) return 'from-green-950/30 to-slate-900/30 border-green-500/20';
+    if (awayWon) return 'from-red-950/30 to-slate-900/30 border-red-500/20';
+    return 'from-yellow-950/30 to-slate-900/30 border-yellow-500/20';
+  };
 
   return (
-    <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-gray-400 whitespace-nowrap">
-            {new Date(match.finishedAt || match.matchDate).toLocaleDateString()}
+    <div className={`bg-gradient-to-r ${getBgGradient()} rounded-lg md:rounded-xl p-3 sm:p-4 md:p-5 border border-slate-700 hover:border-slate-600 transition-all`}>
+      {/* Mobile Layout - Stacked */}
+      <div className="md:hidden space-y-3">
+        {/* Date and Badge Row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="text-xs sm:text-sm font-bold text-gray-400 whitespace-nowrap">
+            {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric',
+              year: '2-digit'
+            })}
+          </span>
+          <ImportanceBadge importance={match. importance} />
+        </div>
+
+        {/* Score Display - Centered */}
+        <div className="bg-slate-900/50 rounded-lg p-4 text-center space-y-2">
+          {/* Home Team */}
+          <div className="flex items-center justify-center gap-2">
+            <div
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+            >
+              {match.homeFaculty.abbreviation}
+            </div>
+            <span className={`text-xs sm:text-sm font-bold truncate flex-1 ${homeWon ? 'text-white' : 'text-gray-400'}`}>
+              {match.homeFaculty.name}
+            </span>
+          </div>
+
+          {/* Score */}
+          <div className="flex items-center justify-center gap-2 py-2">
+            <span className={`text-2xl sm:text-3xl font-black ${homeWon ? 'text-green-400' : 'text-gray-300'}`}>
+              {match.scoreHome}
+            </span>
+            <span className="text-gray-500 font-bold">−</span>
+            <span className={`text-2xl sm:text-3xl font-black ${awayWon ? 'text-green-400' : 'text-gray-300'}`}>
+              {match.scoreAway}
+            </span>
+          </div>
+
+          {/* Away Team */}
+          <div className="flex items-center justify-center gap-2">
+            <div
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              style={{ backgroundColor: match. awayFaculty.colorPrimary }}
+            >
+              {match.awayFaculty.abbreviation}
+            </div>
+            <span className={`text-xs sm:text-sm font-bold truncate flex-1 ${awayWon ? 'text-white' : 'text-gray-400'}`}>
+              {match.awayFaculty.name}
+            </span>
+          </div>
+        </div>
+
+        {/* Result Badge */}
+        <span
+          className={`block text-center px-3 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap ${
+            isDraw
+              ? 'bg-yellow-500/20 text-yellow-400'
+              : homeWon
+              ? 'bg-green-500/20 text-green-400'
+              : 'bg-red-500/20 text-red-400'
+          }`}
+        >
+          {isDraw ? '🤝 Draw' : homeWon ? `✓ ${match.homeFaculty.abbreviation} Won` : `✓ ${match.awayFaculty.abbreviation} Won`}
+        </span>
+      </div>
+
+      {/* Tablet & Desktop Layout - Horizontal */}
+      <div className="hidden md:flex md:items-center md:justify-between md:gap-4 md:flex-wrap lg:flex-nowrap">
+        {/* Date and Badge */}
+        <div className="flex items-center gap-3 min-w-max">
+          <span className="text-sm font-bold text-gray-400 whitespace-nowrap">
+            {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day:  'numeric'
+            })}
           </span>
           <ImportanceBadge importance={match.importance} />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-center">
+        {/* Home Team */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 lg:flex-none">
           <div
-            className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-            style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+            className="w-8 h-8 lg:w-10 lg:h-10 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ backgroundColor: match.homeFaculty. colorPrimary }}
           >
-            {match. homeFaculty.abbreviation}
+            {match.homeFaculty.abbreviation}
           </div>
-          <span className={`text-sm font-bold ${homeWon ? 'text-white' : 'text-gray-400'}`}>
+          <span className={`text-sm lg:text-base font-bold truncate ${homeWon ? 'text-white' : 'text-gray-400'}`}>
             {match.homeFaculty.name}
           </span>
-          <span className="text-xl font-black text-white">{match.scoreHome}</span>
-          <span className="text-gray-500">−</span>
-          <span className="text-xl font-black text-white">{match.scoreAway}</span>
-          <span className={`text-sm font-bold ${awayWon ? 'text-white' : 'text-gray-400'}`}>
+        </div>
+
+        {/* Score */}
+        <div className="flex items-center justify-center gap-2 min-w-max order-3 md:order-none">
+          <span className={`text-xl lg:text-2xl font-black tabular-nums ${homeWon ?  'text-green-400' : 'text-gray-300'}`}>
+            {match.scoreHome}
+          </span>
+          <span className="text-gray-500 font-bold">−</span>
+          <span className={`text-xl lg:text-2xl font-black tabular-nums ${awayWon ? 'text-green-400' : 'text-gray-300'}`}>
+            {match.scoreAway}
+          </span>
+        </div>
+
+        {/* Away Team */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 lg:flex-none">
+          <span className={`text-sm lg:text-base font-bold truncate ${awayWon ?  'text-white' : 'text-gray-400'}`}>
             {match.awayFaculty.name}
           </span>
           <div
-            className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-            style={{ backgroundColor: match. awayFaculty.colorPrimary }}
+            className="w-8 h-8 lg:w-10 lg:h-10 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ backgroundColor: match.awayFaculty.colorPrimary }}
           >
-            {match.awayFaculty.abbreviation}
+            {match.awayFaculty. abbreviation}
           </div>
         </div>
 
+        {/* Result Badge */}
         <span
-          className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
-            isDraw ?   'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+          className={`px-3 py-1 lg:px-4 lg:py-2 rounded-lg text-xs lg:text-sm font-bold whitespace-nowrap min-w-max ${
+            isDraw
+              ? 'bg-yellow-500/20 text-yellow-400'
+              : homeWon
+              ? 'bg-green-500/20 text-green-400'
+              :  'bg-red-500/20 text-red-400'
           }`}
         >
-          {isDraw ? 'Draw' : homeWon ? `${match.homeFaculty.abbreviation} Win` : `${match.awayFaculty.abbreviation} Win`}
+          {isDraw ? 'Draw' : homeWon ?  `${match.homeFaculty.abbreviation} Win` : `${match.awayFaculty.abbreviation} Win`}
         </span>
       </div>
     </div>
   );
 }
-
 // ============================================
 // MAIN CONTROL CENTER COMPONENT
 // ============================================
