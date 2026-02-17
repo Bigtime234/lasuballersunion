@@ -43,10 +43,10 @@ export default function SportsLoginForm() {
                   
                   <div className="text-center">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight bg-gradient-to-r from-red-400 via-orange-300 to-red-500 bg-clip-text text-transparent drop-shadow-2xl">
-                      LASU BALLERS
+                      LASU LIVE
                     </h1>
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                      UNION
+                      SCORES
                     </h2>
                     <div className="w-16 sm:w-20 md:w-24 h-1 sm:h-1. 5 bg-gradient-to-r from-red-500 via-orange-400 to-red-600 mx-auto mt-2 sm:mt-3 rounded-full shadow-lg shadow-red-500/50"></div>
                     <p className="text-red-400 text-xs sm:text-sm font-bold uppercase tracking-widest mt-1. 5 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2">

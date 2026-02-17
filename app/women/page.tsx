@@ -104,12 +104,12 @@ useEffect(() => {
   
   return (
     <Link
-      href="/"
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`fixed right-6 bottom-8 z-40 transition-all duration-700 transform ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-      }`}
+  href="https://chat.whatsapp.com/IDLMPDJkuz0JtYfwBzpPJb?mode=gi_t"
+  target="_blank"
+  rel="noopener noreferrer"
+  className={`fixed right-6 bottom-8 z-40 transition-all duration-700 transform ${
+    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+  }`}
     >
       <div className="relative group">
         <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse opacity-75 group-hover:opacity-100 transition-opacity"></div>

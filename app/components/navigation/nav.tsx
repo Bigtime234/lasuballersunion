@@ -15,6 +15,7 @@ import {
   LogIn,
   Flame,
   Target,
+  Trophy,
   ChevronDown
 } from 'lucide-react';
 import { UserButton } from './user-button';
@@ -42,6 +43,7 @@ const Header: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [isWomensMenuOpen, setIsWomensMenuOpen] = useState(false);
   const [isMobileWomensOpen, setIsMobileWomensOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -49,7 +51,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window. scrollY > 10);
+      setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -71,12 +73,12 @@ const Header: React.FC = () => {
   ];
 
   const isActiveRoute = (href: string): boolean => {
-    if (! isMounted) return false;
+    if (!isMounted) return false;
     return pathname === href;
   };
 
   const isWomensRoute = (): boolean => {
-    if (! isMounted) return false;
+    if (!isMounted) return false;
     return pathname.startsWith('/women');
   };
 
@@ -87,7 +89,7 @@ const Header: React.FC = () => {
     setIsMobileWomensOpen(false);
   };
 
-  if (! isMounted) {
+  if (!isMounted) {
     return <div className="h-16 sm:h-20" />;
   }
 
@@ -105,31 +107,49 @@ const Header: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
+            
             {/* Logo Section */}
-           <Link
-  href="/"
-  className="flex items-center gap-2 sm:gap-3 shrink-0 group min-w-0"
->
-  <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl shadow-lg group-hover:shadow-2xl group-hover:shadow-amber-500/50 transition-all duration-300 transform group-hover:scale-110 flex-shrink-0 bg-slate-900/50 backdrop-blur-md border border-amber-500/30">
-    <Image
-      src="/lasu-ballers-union.png"
-      alt="LASU Ballers Union"
-      width={56}
-      height={56}
-      className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain drop-shadow-lg"
-      priority
-    />
-    <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse shadow-lg"></div>
-  </div>
-  <div className="flex flex-col min-w-0">
-    <h1 className="font-black text-base sm:text-xl md:text-2xl bg-gradient-to-r from-amber-400 via-orange-300 to-red-500 bg-clip-text text-transparent tracking-tight truncate">
-      LASU BALLERS
-    </h1>
-    <p className="text-xs sm:text-sm font-bold text-amber-400 tracking-wider truncate">
-      UNION
-    </p>
-  </div>
-</Link>
+            <Link
+              href="/"
+              className="flex items-center gap-2 sm:gap-3 shrink-0 group hover:opacity-80 transition-opacity"
+            >
+              {/* Logo Container */}
+              <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg shadow-lg group-hover:shadow-2xl group-hover:shadow-amber-500/50 transition-all duration-300 transform group-hover:scale-110 flex-shrink-0 bg-gradient-to-br from-amber-600 to-orange-700 border-2 border-amber-300 overflow-hidden ring-1 ring-amber-400/40 group-hover:ring-2 group-hover:ring-amber-400/60">
+                {!imageError ? (
+                  <Image
+                    src="/lasu-ballers-union.png"
+                    alt="LASU Ballers Union"
+                    fill
+                    className="w-full h-full object-cover object-center"
+                    priority
+                    sizes="(max-width: 640px) 48px, (max-width: 768px) 56px, 64px"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-500 to-orange-600 animate-pulse">
+                    <Trophy size={28} className="text-white drop-shadow-lg" />
+                  </div>
+                )}
+                <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse shadow-lg shadow-red-500/50 z-10"></div>
+              </div>
+
+              {/* Text - Only show on larger screens to avoid crowding */}
+              <div className="hidden sm:flex flex-col min-w-0">
+                <h1 className="font-black text-lg sm:text-xl md:text-2xl bg-gradient-to-r from-amber-400 via-orange-300 to-red-500 bg-clip-text text-transparent tracking-tight leading-tight">
+                  LASU LIVE
+                </h1>
+                <p className="text-xs font-bold text-amber-400 tracking-wider leading-tight">
+                  SCORES
+                </p>
+              </div>
+
+              {/* Mobile text icon */}
+              <div className="sm:hidden flex flex-col">
+                <div className="w-6 h-6 rounded bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-xs font-black text-white">
+                  ⚡
+                </div>
+              </div>
+            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1 ml-6">
@@ -141,7 +161,7 @@ const Header: React.FC = () => {
                   <div key={item.href} className="relative group">
                     <button
                       onClick={() => handleNavigate(item.href)}
-                      className={`flex items-center gap-2 px-3 xl:px-4 py-2. 5 rounded-lg font-bold text-sm transition-all duration-200 relative whitespace-nowrap ${
+                      className={`flex items-center gap-2 px-3 xl:px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-200 relative whitespace-nowrap ${
                         isActive
                           ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/50 border border-amber-300/50'
                           : 'text-gray-200 hover:text-white border border-transparent hover:bg-white/10'
@@ -155,7 +175,7 @@ const Header: React.FC = () => {
                         </span>
                       )}
                       {isActive && (
-                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1. 5 h-1.5 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50"></div>
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50"></div>
                       )}
                     </button>
                   </div>
@@ -189,7 +209,7 @@ const Header: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 to-purple-500/5 rounded-xl pointer-events-none"></div>
                   
                   {/* Header */}
-                  <div className="px-4 py-3 border-b border-pink-500/20">
+                  <div className="px-4 py-3 border-b border-pink-500/20 relative z-10">
                     <div className="flex items-center gap-2">
                       <Flame size={20} className="text-pink-400 flex-shrink-0" />
                       <span className="font-black text-sm bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
@@ -200,7 +220,7 @@ const Header: React.FC = () => {
                   </div>
 
                   {/* Menu Items */}
-                  <div className="py-2">
+                  <div className="py-2 relative z-10">
                     {womensDropdownItems.map((item) => {
                       const Icon = item.icon;
                       const isActive = isActiveRoute(item.href);
@@ -211,7 +231,7 @@ const Header: React.FC = () => {
                           onClick={() => handleNavigate(item.href)}
                           className={`relative w-full flex items-start gap-3 px-4 py-3 text-sm font-bold transition-all duration-200 ${
                             isActive
-                              ?  'bg-gradient-to-r from-pink-500/30 to-purple-500/30 text-pink-400 border-l-4 border-pink-500'
+                              ? 'bg-gradient-to-r from-pink-500/30 to-purple-500/30 text-pink-400 border-l-4 border-pink-500'
                               : 'text-gray-300 hover:text-white hover:bg-white/10'
                           }`}
                         >
@@ -233,11 +253,11 @@ const Header: React.FC = () => {
             {/* Right Section */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
               {/* User Profile / Sign In */}
-              {status === 'authenticated' && session ?  (
-                <div className="relative group/user">
+              {status === 'authenticated' && session ? (
+                <div className="relative group/user hidden sm:block">
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg blur opacity-25 group-hover/user:opacity-50 transition duration-300"></div>
                   <div className="relative">
-                    <UserButton {... session} />
+                    <UserButton {...session} />
                   </div>
                 </div>
               ) : (
@@ -253,7 +273,7 @@ const Header: React.FC = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2. 5 rounded-lg text-amber-400 hover:bg-white/10 transition-all duration-200 border border-amber-500/30 hover:border-amber-500/60 flex-shrink-0"
+                className="lg:hidden p-2.5 rounded-lg text-amber-400 hover:bg-white/10 transition-all duration-200 border border-amber-500/30 hover:border-amber-500/60 flex-shrink-0"
                 aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? (
@@ -272,11 +292,11 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 sm:top-20 z-30 bg-gradient-to-b from-slate-900 via-indigo-900 to-slate-900 border-t-2 border-amber-500/30">
-          <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-2 max-h-[calc(100vh-100px)] overflow-y-auto">
+        <div className="lg:hidden fixed inset-0 top-16 sm:top-20 z-30 bg-gradient-to-b from-slate-900 via-indigo-900 to-slate-900 border-t-2 border-amber-500/30 overflow-y-auto">
+          <nav className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-2 pb-12">
             {/* Main Nav Items */}
             {mainNavItems.map((item) => {
-              const Icon = item. icon;
+              const Icon = item.icon;
               const isActive = isActiveRoute(item.href);
               
               return (
@@ -315,7 +335,7 @@ const Header: React.FC = () => {
                     : 'text-gray-200 hover:text-white hover:bg-white/10 border border-transparent'
                 }`}
               >
-                <Flame size={22} className={`flex-shrink-0 ${isWomensRoute() ?  'text-white' : 'text-pink-400'}`} />
+                <Flame size={22} className={`flex-shrink-0 ${isWomensRoute() ? 'text-white' : 'text-pink-400'}`} />
                 <div className="flex-1 text-left">
                   <span>Women's Sports</span>
                 </div>
@@ -327,7 +347,7 @@ const Header: React.FC = () => {
                 <div className="ml-4 space-y-1 border-l-2 border-pink-500/30 pl-4">
                   {womensDropdownItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = isActiveRoute(item. href);
+                    const isActive = isActiveRoute(item.href);
                     
                     return (
                       <button
@@ -359,7 +379,7 @@ const Header: React.FC = () => {
                 className="w-full mt-6 flex items-center justify-center gap-2 px-5 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg font-bold text-sm hover:from-amber-600 hover:to-orange-700 transition-all duration-200 shadow-lg hover:shadow-2xl hover:shadow-amber-500/50 transform hover:scale-105 border-2 border-amber-300/50"
               >
                 <LogIn size={20} className="flex-shrink-0" />
-                <span>Sign In to LASU Ballers</span>
+                <span>Sign In to LASU LIVE SCORES</span>
               </button>
             )}
 
@@ -367,7 +387,7 @@ const Header: React.FC = () => {
             <div className="mt-8 pt-6 border-t border-amber-500/20">
               <div className="text-center space-y-2">
                 <p className="text-amber-400 font-black text-sm">🔥 WHERE CAMPUS LEGENDS ARE MADE 🔥</p>
-                <p className="text-gray-400 text-xs">LASU Ballers Union 2024/25</p>
+                <p className="text-gray-400 text-xs">LASU Ballers Union 2025/26</p>
               </div>
             </div>
           </nav>
@@ -384,7 +404,7 @@ const Header: React.FC = () => {
           50% { opacity: 0.7; }
         }
 
-        . animate-pulse {
+        .animate-pulse {
           animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `}</style>

@@ -174,7 +174,7 @@ function FloatingWhatsAppButton() {
 
   return (
     <Link
-      href="/"
+      href="https://chat.whatsapp.com/IDLMPDJkuz0JtYfwBzpPJb?mode=gi_t"
       target="_blank"
       rel="noopener noreferrer"
       className={`fixed right-6 bottom-8 z-40 transition-all duration-700 transform ${
@@ -655,13 +655,13 @@ export default function LASUBallersHomePage() {
               {/* Main Title */}
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-tight drop-shadow-2xl">
                 <span className="bg-gradient-to-r from-red-400 via-yellow-300 to-orange-400 bg-clip-text text-transparent">
-                  LASU BALLERS
+                  LASU LIVE
                 </span>
               </h1>
 
               {/* Subtitle */}
               <h2 className="text-3xl md:text-4xl lg: text-5xl font-black text-white drop-shadow-2xl">
-                UNION
+                SCORES
               </h2>
 
               {/* Description */}
