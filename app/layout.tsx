@@ -5,6 +5,7 @@ import Nav from "./components/navigation/nav";
 import Footer from "@/app/homepage/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./components/providers"; 
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
@@ -72,6 +73,7 @@ export default function RootLayout({
 
           <Footer />
         </Providers>
+        <GoogleAnalytics gaId="G-J9R4RB0C0R" />
       </body>
     </html>
   );
