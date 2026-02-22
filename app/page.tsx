@@ -576,7 +576,7 @@ export default function LASUBallersHomePage() {
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <h2 className="text-2xl font-black text-white mb-2">Loading LASU Ballers Union</h2>
+          <h2 className="text-2xl font-black text-white mb-2">Loading lasulivescores</h2>
           <p className="text-gray-400 font-semibold">Preparing the championship experience...</p>
         </div>
       </div>
