@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_NG",
-    url: "https://lasusportshub.com",
+    url: "https://lasulivescores.vercel.app",
     title: "LASU Sports Hub | Live Scores",
     description: "Real-time updates for the LASU Faculty League.",
     siteName: "LASU Sports Hub",
