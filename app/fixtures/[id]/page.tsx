@@ -57,7 +57,7 @@ export default async function FixtureDetailPage({
       <div className="container mx-auto px-4 space-y-8">
         {/* Back Button */}
         <Link
-          href="/fixtures"
+          href="/fixturespagenav"
           className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 font-bold transition-colors"
         >
           <ArrowLeft size={20} />
