@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
+import { Zap, TrendingUp, AlertCircle } from 'lucide-react';
 
 interface Match {
   id: number;
@@ -12,11 +12,11 @@ interface Match {
   scoreHome: number;
   scoreAway: number;
   matchDate: Date | string;
-  finishedAt:  Date | string | null;
+  finishedAt: Date | string | null;
   matchMinute: number;
   archived: boolean;
   importance: string | null;
-  venue?:  string;
+  venue?: string;
   homeFaculty: {
     id: number;
     name: string;
@@ -39,20 +39,20 @@ interface LiveScoresData {
 // ============================================
 // IMPORTANCE BADGE
 // ============================================
-function ImportanceBadge({ importance }: { importance?:  string }) {
+function ImportanceBadge({ importance }: { importance?: string | null }) {
   if (!importance) return null;
 
-  const badgeConfig:  Record<string, { bg: string; text: string; icon: string }> = {
+  const badgeConfig: Record<string, { bg: string; text: string; icon: string }> = {
     Friendly: { bg: 'bg-gray-500/20', text: 'text-gray-400', icon: '⚽' },
-    League: { bg: 'bg-blue-500/20', text:  'text-blue-400', icon: '🏆' },
+    League: { bg: 'bg-blue-500/20', text: 'text-blue-400', icon: '🏆' },
     Cup: { bg: 'bg-purple-500/20', text: 'text-purple-400', icon: '🏆' },
     Finals: { bg: 'bg-amber-500/20', text: 'text-amber-400', icon: '👑' },
   };
 
-  const config = badgeConfig[importance as keyof typeof badgeConfig] || badgeConfig.Friendly;
+  const config = badgeConfig[importance] || badgeConfig.Friendly;
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.bg} ${config.text}`}>
       {config.icon} {importance}
     </span>
   );
@@ -70,7 +70,7 @@ function LiveMatchCard({ match }: { match: Match }) {
             <div className="w-2 h-2 bg-white rounded-full animate-ping" />
             LIVE {match.matchMinute || 0}'
           </span>
-          <ImportanceBadge importance={match. importance} />
+          <ImportanceBadge importance={match.importance} />
         </div>
       </div>
 
@@ -80,7 +80,7 @@ function LiveMatchCard({ match }: { match: Match }) {
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-              style={{ backgroundColor: match. homeFaculty.colorPrimary }}
+              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
             >
               {match.homeFaculty.abbreviation}
             </div>
@@ -115,6 +115,83 @@ function LiveMatchCard({ match }: { match: Match }) {
 }
 
 // ============================================
+// RECENT RESULT CARD — FULLY RESPONSIVE
+// ============================================
+function RecentResultCard({ match }: { match: Match }) {
+  const homeWon = match.scoreHome > match.scoreAway;
+  const awayWon = match.scoreAway > match.scoreHome;
+  const isDraw = match.scoreHome === match.scoreAway;
+  const isFriendly = match.importance === 'Friendly';
+
+  return (
+    <div className={`rounded-xl p-4 border transition-all ${
+      isFriendly
+        ? 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border-slate-700 opacity-80'
+        : 'bg-gradient-to-br from-slate-800/60 to-slate-900/60 border-slate-700 hover:border-green-500/50'
+    }`}>
+
+      {/* ── TOP ROW: date + badge + result pill ── */}
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">
+            {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+          <ImportanceBadge importance={match.importance} />
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+          isFriendly
+            ? 'bg-gray-500/20 text-gray-400'
+            : isDraw
+            ? 'bg-yellow-500/20 text-yellow-400'
+            : 'bg-green-500/20 text-green-400'
+        }`}>
+          {isFriendly ? 'Friendly' : isDraw ? '🤝 Draw' : '✓ FT'}
+        </span>
+      </div>
+
+      {/* ── SCORE ROW: badge | name | score − score | name | badge ── */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Home */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div
+            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+          >
+            {match.homeFaculty.abbreviation}
+          </div>
+          <span className={`text-xs md:text-sm font-bold truncate ${homeWon && !isFriendly ? 'text-white' : 'text-gray-400'}`}>
+            {match.homeFaculty.name}
+          </span>
+        </div>
+
+        {/* Score */}
+        <div className="flex items-center gap-1 flex-shrink-0 px-2">
+          <span className="text-xl md:text-2xl font-black text-white">{match.scoreHome}</span>
+          <span className="text-gray-500 text-sm">−</span>
+          <span className="text-xl md:text-2xl font-black text-white">{match.scoreAway}</span>
+        </div>
+
+        {/* Away */}
+        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+          <span className={`text-xs md:text-sm font-bold truncate text-right ${awayWon && !isFriendly ? 'text-white' : 'text-gray-400'}`}>
+            {match.awayFaculty.name}
+          </span>
+          <div
+            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            style={{ backgroundColor: match.awayFaculty.colorPrimary }}
+          >
+            {match.awayFaculty.abbreviation}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // MAIN LIVE SCORES PAGE
 // ============================================
 export default function LiveScoresPage() {
@@ -125,40 +202,28 @@ export default function LiveScoresPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ============================================
-  // SESSION PROTECTION
-  // ============================================
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
 
-  // ============================================
-  // FETCH LIVE SCORES DATA
-  // ============================================
   useEffect(() => {
     const fetchLiveScores = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Fetch from appropriate endpoint based on category
         const endpoint = category === 'men' ? '/api2/home-data' : '/api2/women-data';
         const response = await fetch(endpoint);
-
-        if (!response. ok) {
-          throw new Error(`Failed to fetch ${category} live scores`);
-        }
-
+        if (!response.ok) throw new Error(`Failed to fetch ${category} live scores`);
         const homeData = await response.json();
         setData({
           liveMatches: homeData.liveMatches || [],
-          recentMatches:  homeData.recentMatches || [],
+          recentMatches: homeData.recentMatches || [],
         });
       } catch (err) {
         console.error('Error fetching live scores:', err);
-        setError(err instanceof Error ? err.message :  'Failed to load live scores');
+        setError(err instanceof Error ? err.message : 'Failed to load live scores');
       } finally {
         setLoading(false);
       }
@@ -169,7 +234,6 @@ export default function LiveScoresPage() {
     }
   }, [category, status]);
 
-  // Show loading while checking authentication
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
@@ -182,17 +246,14 @@ export default function LiveScoresPage() {
     );
   }
 
-  // Don't render if not authenticated
-  if (status === 'unauthenticated') {
-    return null;
-  }
+  if (status === 'unauthenticated') return null;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <h2 className="text-2xl font-black text-white mb-2">Loading {category. toUpperCase()} Live Scores</h2>
+          <h2 className="text-2xl font-black text-white mb-2">Loading {category.toUpperCase()} Live Scores</h2>
           <p className="text-gray-400 font-semibold">Fetching match updates...</p>
         </div>
       </div>
@@ -225,8 +286,8 @@ export default function LiveScoresPage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-12">
+
         {/* Page Header */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -254,7 +315,7 @@ export default function LiveScoresPage() {
             </button>
             <button
               onClick={() => setCategory('women')}
-              className={`flex items-center gap-2 px-6 md: px-8 py-3 rounded-lg font-black text-sm md:text-base transition-all duration-300 ${
+              className={`flex items-center gap-2 px-6 md:px-8 py-3 rounded-lg font-black text-sm md:text-base transition-all duration-300 ${
                 category === 'women'
                   ? 'bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg shadow-pink-500/50'
                   : 'text-gray-400 hover:text-white'
@@ -266,7 +327,7 @@ export default function LiveScoresPage() {
           </div>
         </div>
 
-        {/* Live Matches Section */}
+        {/* Live Matches */}
         {data.liveMatches.length > 0 && (
           <div className="space-y-6 mb-12">
             <h2 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3 flex-wrap">
@@ -276,14 +337,14 @@ export default function LiveScoresPage() {
               </span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {data. liveMatches.map((match) => (
+              {data.liveMatches.map((match) => (
                 <LiveMatchCard key={match.id} match={match} />
               ))}
             </div>
           </div>
         )}
 
-        {/* No Live Matches Message */}
+        {/* No Live Matches */}
         {data.liveMatches.length === 0 && (
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-12 border border-slate-700 text-center mb-12">
             <Zap size={48} className="text-gray-500 mx-auto mb-3" />
@@ -292,8 +353,8 @@ export default function LiveScoresPage() {
           </div>
         )}
 
-        {/* Recent Results Section */}
-        {data. recentMatches.length > 0 && (
+        {/* Recent Results */}
+        {data.recentMatches.length > 0 && (
           <div className="space-y-6">
             <h2 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3 flex-wrap">
               <TrendingUp size={32} className="text-green-500" />
@@ -301,82 +362,17 @@ export default function LiveScoresPage() {
                 Recent Results
               </span>
             </h2>
-
-            <div className="space-y-3">
-              {data.recentMatches.map((match) => {
-                const homeWon = match.scoreHome > match.scoreAway;
-                const awayWon = match. scoreAway > match.scoreHome;
-                const isDraw = match.scoreHome === match.scoreAway;
-                const isFriendly = match.importance === 'Friendly';
-
-                return (
-                  <div
-                    key={match.id}
-                    className={`rounded-lg p-4 md:p-6 border transition-all backdrop-blur-sm ${
-                      isFriendly
-                        ?  'bg-gradient-to-r from-slate-800/40 to-slate-900/40 border-slate-700 opacity-75'
-                        : 'bg-gradient-to-r from-slate-800/60 to-slate-900/60 border-slate-700 hover:border-green-500/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3 flex-wrap md:flex-nowrap">
-                      {/* Date & Badge */}
-                      <div className="flex items-center gap-2 min-w-max">
-                        <span className="text-xs font-bold text-gray-400 whitespace-nowrap">
-                          {new Date(match. finishedAt || match.matchDate).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric'
-                          })}
-                        </span>
-                        <ImportanceBadge importance={match. importance} />
-                      </div>
-
-                      {/* Match Score */}
-                      <div className="flex items-center gap-2 flex-wrap justify-center flex-1 md:flex-initial order-3 md:order-2">
-                        <div
-                          className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                          style={{ backgroundColor: match.homeFaculty.colorPrimary }}
-                        >
-                          {match.homeFaculty. abbreviation}
-                        </div>
-                        <span className={`text-xs md:text-sm font-bold truncate ${homeWon && ! isFriendly ? 'text-white' : 'text-gray-400'}`}>
-                          {match.homeFaculty.name}
-                        </span>
-                        <span className="text-lg md:text-2xl font-black text-white mx-1">{match.scoreHome}</span>
-                        <span className="text-gray-500">−</span>
-                        <span className="text-lg md:text-2xl font-black text-white mx-1">{match.scoreAway}</span>
-                        <span className={`text-xs md:text-sm font-bold truncate ${awayWon && ! isFriendly ? 'text-white' : 'text-gray-400'}`}>
-                          {match.awayFaculty.name}
-                        </span>
-                        <div
-                          className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                          style={{ backgroundColor: match.awayFaculty.colorPrimary }}
-                        >
-                          {match.awayFaculty.abbreviation}
-                        </div>
-                      </div>
-
-                      {/* Result Badge */}
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap order-2 md:order-3 ${
-                        isFriendly
-                          ? 'bg-gray-500/20 text-gray-400'
-                          : isDraw
-                          ? 'bg-yellow-500/20 text-yellow-400'
-                          : homeWon
-                          ?  'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
-                      }`}>
-                        {isFriendly ? 'Friendly' : isDraw ?  '🤝 Draw' : homeWon ?  '✓ FT' : '✓ FT'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* ✅ FIXED: grid instead of stuffed single row — 1 col mobile, 2 col desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {data.recentMatches.map((match) => (
+                <RecentResultCard key={match.id} match={match} />
+              ))}
             </div>
           </div>
         )}
 
-        {/* No Results Message */}
-        {data. recentMatches.length === 0 && data.liveMatches.length === 0 && (
+        {/* Nothing at all */}
+        {data.recentMatches.length === 0 && data.liveMatches.length === 0 && (
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-12 border border-slate-700 text-center">
             <TrendingUp size={48} className="text-gray-500 mx-auto mb-3" />
             <p className="text-gray-400 text-lg font-semibold">No results yet</p>
@@ -386,17 +382,6 @@ export default function LiveScoresPage() {
           </div>
         )}
       </div>
-
-      {/* Scrollbar Styling */}
-      <style jsx global>{`
-        .scrollbar-hide: :-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style:  none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

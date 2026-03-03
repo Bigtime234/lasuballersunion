@@ -1,10 +1,20 @@
 import { db } from '@/server';
-import { matches, faculties, seasons } from '@/server/schema';
+import { matches, faculties, seasons, matchLikes, users } from '@/server/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import { auth } from '@/server/auth'; // ✅ ADD THIS
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
+    // ✅ GET CURRENT USER
+    const session = await auth();
+    const userId = session?.user?.email ? 
+      (await db.query.users.findFirst({
+        where: eq(users.email, session.user.email),
+      }))?.id : null;
+
+    console.log('📊 Men API - Current user:', userId);
+
     // Get active season
     const activeSeason = await db.query.seasons.findFirst({
       where: eq(seasons.status, 'ACTIVE'),
@@ -29,7 +39,7 @@ export async function GET() {
       });
     }
 
-    // Get all WOMEN'S matches for ACTIVE SEASON ONLY
+    // Get all MEN'S matches for ACTIVE SEASON ONLY
     const allMatches = await db.query.matches.findMany({
       where: and(
         eq(matches.category, 'women'),
@@ -39,11 +49,49 @@ export async function GET() {
         homeFaculty: true,
         awayFaculty: true,
       },
-      orderBy: desc(matches.matchDate), // ✅ SORT BY DATE FOR STREAK CALC
+      orderBy: desc(matches.matchDate),
     });
 
-    // Get live matches
+    // ✅ IMPROVED: ADD LIKE COUNTS + USER'S LIKE
+    const addLikeCountsWithUserLike = async (matchesList: typeof allMatches) => {
+      return Promise.all(
+        matchesList.map(async (match) => {
+          // Get all likes for this match
+          const allLikesForMatch = await db.query.matchLikes.findMany({
+            where: eq(matchLikes.matchId, match.id),
+          });
+
+          // Count likes per team
+          const homeLikesCount = allLikesForMatch.filter(
+            l => l.likedFacultyId === match.homeFacultyId
+          ).length;
+
+          const awayLikesCount = allLikesForMatch.filter(
+            l => l.likedFacultyId === match.awayFacultyId
+          ).length;
+
+          // ✅ GET USER'S LIKE FOR THIS MATCH (if logged in)
+          let userLikedFacultyId: number | null = null;
+          if (userId) {
+            const userLike = allLikesForMatch.find(
+              l => l.userId === userId
+            );
+            userLikedFacultyId = userLike?.likedFacultyId || null;
+          }
+
+          return {
+            ...match,
+            homeLikesCount,
+            awayLikesCount,
+            userLikedFacultyId, // ✅ ADD THIS
+          };
+        })
+      );
+    };
+
+    // Get live matches with like counts
     const liveMatches = allMatches.filter(m => m.status === 'LIVE');
+    const liveMatchesWithLikes = await addLikeCountsWithUserLike(liveMatches);
 
     // Get upcoming matches (next 5)
     const upcomingMatches = allMatches
@@ -56,11 +104,12 @@ export async function GET() {
       .filter(m => m.status === 'FINISHED' && !m.archived && m.importance !== 'Friendly')
       .sort((a, b) => new Date(b.finishedAt || 0).getTime() - new Date(a.finishedAt || 0).getTime())
       .slice(0, 6);
+    const recentMatchesWithLikes = await addLikeCountsWithUserLike(recentMatches);
 
     // Get all faculties
     const allFaculties = await db.query.faculties.findMany();
 
-    // Calculate standings from WOMEN'S COMPETITIVE MATCHES IN ACTIVE SEASON ONLY
+    // Calculate standings from MEN'S COMPETITIVE MATCHES IN ACTIVE SEASON ONLY
     const competitiveMatches = allMatches.filter(
       m => m.status === 'FINISHED' && m.importance !== 'Friendly'
     );
@@ -70,7 +119,6 @@ export async function GET() {
       let streak = 0;
       let streakType: 'W' | 'D' | null = null;
 
-      // Go through matches from most recent backwards
       for (const match of matches) {
         const isHome = match.homeFacultyId === facultyId;
         const isAway = match.awayFacultyId === facultyId;
@@ -88,17 +136,17 @@ export async function GET() {
             streakType = 'W';
             streak++;
           } else {
-            break; // Streak ended
+            break;
           }
         } else if (drawn) {
           if (streakType === 'D' || streakType === null) {
             streakType = 'D';
             streak++;
           } else {
-            break; // Streak ended
+            break;
           }
         } else {
-          break; // Loss ends streak
+          break;
         }
       }
 
@@ -126,7 +174,7 @@ export async function GET() {
       });
     });
 
-    // Calculate from competitive women's matches in active season
+    // Calculate from competitive men's matches in active season
     competitiveMatches.forEach(match => {
       const homeTeam = standingsMap.get(match.homeFacultyId);
       const awayTeam = standingsMap.get(match.awayFacultyId);
@@ -160,7 +208,6 @@ export async function GET() {
       }
     });
 
-    // ✅ NOW CALCULATE STREAKS AFTER ALL STATS
     standingsMap.forEach((team) => {
       team.currentStreak = calculateStreak(team.id, competitiveMatches);
     });
@@ -185,7 +232,6 @@ export async function GET() {
       return total > maxTotal ? match : max;
     }, competitiveMatches[0] || null);
 
-    // ✅ FIND TEAM WITH LONGEST STREAK (not just the leader)
     const longestStreak = standings.length > 0 
       ? standings.reduce((max, team) => 
           team.currentStreak > (max?.currentStreak || 0) ? team : max
@@ -203,9 +249,9 @@ export async function GET() {
     };
 
     return NextResponse.json({
-      liveMatches,
+      liveMatches: liveMatchesWithLikes,
       upcomingMatches,
-      recentMatches,
+      recentMatches: recentMatchesWithLikes,
       standings,
       stats,
       season: {
@@ -217,9 +263,9 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Error fetching women data:', error);
+    console.error('Error fetching home data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch women data' },
+      { error: 'Failed to fetch home data' },
       { status: 500 }
     );
   }

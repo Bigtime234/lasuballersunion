@@ -257,16 +257,10 @@ export default async function FixtureDetailPage({
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="/fixtures"
+            href="/fixturespagenav"
             className="px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-xl font-black transition-all transform hover:scale-105 shadow-lg"
           >
             View All Fixtures
-          </Link>
-          <Link
-            href="/standings"
-            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-black transition-all transform hover:scale-105 shadow-lg"
-          >
-            View Standings
           </Link>
         </div>
       </div>

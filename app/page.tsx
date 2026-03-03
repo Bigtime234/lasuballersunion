@@ -21,11 +21,12 @@ import {
   Sparkles,
   Heart,
   MapPin,
+    X,
   MessageCircle,
-  Zap as ZapIcon,
-  Target,
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
+import LiveMatchCard from '@/components/LiveMatchCard';
+
 
 interface Match {
   id: number;
@@ -33,12 +34,15 @@ interface Match {
   scoreHome: number;
   scoreAway: number;
   matchDate: Date | string;
-  finishedAt:  Date | string | null;
+  finishedAt: Date | string | null;
   matchMinute: number;
   archived: boolean;
   importance: string | null;
-  venue?:  string;
-  homeFaculty:  {
+  venue?: string;
+  homeLikesCount?: number;
+  awayLikesCount?: number;
+  userLikedFacultyId?: number | null;
+  homeFaculty: {
     id: number;
     name: string;
     abbreviation: string;
@@ -83,7 +87,7 @@ interface HomeData {
 }
 
 // ============================================
-// ANIMATION HOOK - OPTION 2 SLOWER TIMING
+// ANIMATION HOOK
 // ============================================
 function useStaggerAnimation() {
   const [animateHero, setAnimateHero] = useState(false);
@@ -95,7 +99,7 @@ function useStaggerAnimation() {
 
   useEffect(() => {
     setAnimateHero(true);
-    
+
     const timer1 = setTimeout(() => setAnimateLive(true), 1500);
     const timer2 = setTimeout(() => setAnimateStats(true), 2000);
     const timer3 = setTimeout(() => setAnimateUpcoming(true), 2500);
@@ -122,15 +126,15 @@ function HeroCarousel() {
   const [fadeOut, setFadeOut] = useState(false);
 
   const images = [
-    '/fav. jpg',
+    '/fav.jpg',
     '/hero-new2.jpg',
-    '/hero-new. jpg',
+    '/hero-new.jpg',
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setFadeOut(true);
-      
+
       setTimeout(() => {
         setCurrentImage((prev) => (prev + 1) % images.length);
         setFadeOut(false);
@@ -183,11 +187,9 @@ function FloatingWhatsAppButton() {
     >
       <div className="relative group">
         <div className="absolute inset-0 bg-green-500 rounded-full animate-pulse opacity-75 group-hover:opacity-100 transition-opacity"></div>
-        
         <div className="relative w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/50 transition-all transform hover:scale-110 group-hover:shadow-green-500/80">
           <FaWhatsapp className="w-8 h-8 text-white animate-bounce group-hover:animate-none transition-all" />
         </div>
-
         <div className="absolute -left-32 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           <div className="bg-green-600 text-white text-sm font-bold py-2 px-4 rounded-lg whitespace-nowrap shadow-lg">
             Join WhatsApp Channel
@@ -203,11 +205,11 @@ function FloatingWhatsAppButton() {
 // IMPORTANCE BADGE
 // ============================================
 function ImportanceBadge({ importance }: { importance: string | null | undefined }) {
-  if (! importance) return null;
+  if (!importance) return null;
 
-  const badgeConfig:  Record<string, { bg: string; text: string; icon: string; border: string }> = {
+  const badgeConfig: Record<string, { bg: string; text: string; icon: string; border: string }> = {
     Friendly: { bg: 'bg-gray-500/10', text: 'text-gray-400', icon: '⚽', border: 'border-gray-500/30' },
-    League: { bg: 'bg-blue-500/10', text:  'text-blue-400', icon: '🏆', border: 'border-blue-500/30' },
+    League: { bg: 'bg-blue-500/10', text: 'text-blue-400', icon: '🏆', border: 'border-blue-500/30' },
     Cup: { bg: 'bg-purple-500/10', text: 'text-purple-400', icon: '🏆', border: 'border-purple-500/30' },
     Finals: { bg: 'bg-amber-500/10', text: 'text-amber-400', icon: '👑', border: 'border-amber-500/30' },
   };
@@ -259,81 +261,8 @@ function CountdownTimer({ targetDate }: { targetDate: Date | string }) {
     return () => clearInterval(timer);
   }, [targetDate]);
 
-  if (!mounted) return <span className="text-blue-300 text-xs font-bold">... </span>;
+  if (!mounted) return <span className="text-blue-300 text-xs font-bold">...</span>;
   return <span className="text-blue-300 text-xs font-bold">{timeLeft}</span>;
-}
-
-// ============================================
-// LIVE MATCH CARD
-// ============================================
-function LiveMatchCard({ match }: { match: Match }) {
-  const [isLiked, setIsLiked] = useState(false);
-
-  return (
-    <div className="rounded-2xl p-6 transition-all duration-300 group hover:scale-105 cursor-pointer bg-gradient-to-br from-red-950/60 via-red-900/40 to-orange-950/30 border-2 border-red-500/40 shadow-2xl shadow-red-500/20 hover:shadow-red-500/40 hover:border-red-500/60">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-full font-black text-sm animate-pulse shadow-lg shadow-red-500/50">
-            <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
-            LIVE {match.matchMinute || 0}'
-          </div>
-          <ImportanceBadge importance={match. importance} />
-        </div>
-        <button onClick={() => setIsLiked(!isLiked)} className="transition-transform hover:scale-125">
-          <Heart size={20} className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1">
-            <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg transition-transform group-hover:scale-110"
-              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
-            >
-              {match.homeFaculty.abbreviation}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-gray-400 uppercase tracking-wide">Home</p>
-              <p className="text-lg font-black text-white">{match.homeFaculty. name}</p>
-            </div>
-          </div>
-          <p className="text-5xl font-black tabular-nums text-white">{match.scoreHome}</p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
-          <span className="text-xs font-bold text-gray-500 uppercase">vs</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1">
-            <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg transition-transform group-hover:scale-110"
-              style={{ backgroundColor: match.awayFaculty.colorPrimary }}
-            >
-              {match. awayFaculty.abbreviation}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-gray-400 uppercase tracking-wide">Away</p>
-              <p className="text-lg font-black text-white">{match.awayFaculty.name}</p>
-            </div>
-          </div>
-          <p className="text-5xl font-black tabular-nums text-white">{match.scoreAway}</p>
-        </div>
-      </div>
-
-      <Link
-        href={`/livescores? match=${match.id}`}
-        className="mt-6 block w-full text-center px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-lg font-bold text-sm transition-all transform hover:scale-105 flex items-center justify-center gap-2 group"
-      >
-        <Play size={16} />
-        Watch Live
-        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-      </Link>
-    </div>
-  );
 }
 
 // ============================================
@@ -345,12 +274,12 @@ function StatCard({
   icon: Icon,
   gradient,
   subtext,
-}:  {
+}: {
   label: string;
   value: string | number;
   icon: React.ComponentType<any>;
   gradient: string;
-  subtext:  string;
+  subtext: string;
 }) {
   return (
     <div className={`relative overflow-hidden rounded-2xl p-6 border backdrop-blur-md transition-all hover:scale-105 group cursor-pointer ${gradient}`}>
@@ -377,14 +306,211 @@ function StatCard({
 }
 
 // ============================================
+// MATCH RESULT CARD — FIXED WITH WORKING LIKES
+// ============================================
+// ============================================
+// MATCH RESULT CARD — WITH CHEER MESSAGES
+// ============================================
+function MatchResultCard({ match }: { match: Match }) {
+  const [homeLikes, setHomeLikes] = useState(match.homeLikesCount || 0);
+  const [awayLikes, setAwayLikes] = useState(match.awayLikesCount || 0);
+  const [userLiked, setUserLiked] = useState<number | null>(match.userLikedFacultyId || null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showCheer, setShowCheer] = useState(false);
+  const [cheerMessage, setCheerMessage] = useState('');
+
+  const homeWon = match.scoreHome > match.scoreAway;
+  const awayWon = match.scoreAway > match.scoreHome;
+  const isDraw = match.scoreHome === match.scoreAway;
+
+  const isHomeLiked = userLiked === match.homeFaculty.id;
+  const isAwayLiked = userLiked === match.awayFaculty.id;
+
+  const cheerMessages = {
+    home: [
+      "🏠 Our House, Our Rules!",
+      "⚡ Home Advantage! Let's Go!",
+      "🔥 Defend the Fort!",
+      "💪 This is Our Ground!",
+      "👑 Dominate at Home!",
+      "🎯 Make Them Fear This Place!",
+      "🏟️ Crowd is Our 12th Player!",
+      "⚽ Play Like Champions!",
+      "🌟 Show Your Power!",
+      "🚀 Let's Make History!",
+    ],
+    away: [
+      "🚌 Road Warriors Let's Go!",
+      "💫 Underdog Energy!",
+      "🛣️ We Don't Back Down!",
+      "⚔️ Come For The Win!",
+      "🔥 Silence Their Crowd!",
+      "🎖️ Show Them Who We Are!",
+      "💪 Believe & Fight!",
+      "🏅 Away But Unbreakable!",
+      "🌍 We Came to Take It!",
+      "👊 Victory or Nothing!",
+    ],
+  };
+
+  const getCheerMessage = (facultyId: number): string => {
+    const pool = facultyId === match.homeFaculty.id ? cheerMessages.home : cheerMessages.away;
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
+
+  const handleLike = async (facultyId: number) => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setError(null);
+    setShowCheer(false);
+
+    try {
+      const response = await fetch(`/api/matches/${match.id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ likedFacultyId: facultyId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+        setError(errorData.error || `Error: ${response.status}`);
+        return;
+      }
+
+      const data = await response.json();
+
+      setHomeLikes(data.homeLikesCount);
+      setAwayLikes(data.awayLikesCount);
+      setUserLiked(data.isLiked ? facultyId : null);
+
+      // ✅ Show cheer message only when liking (not unliking)
+      if (data.isLiked) {
+        setCheerMessage(getCheerMessage(facultyId));
+        setShowCheer(true);
+        setTimeout(() => setShowCheer(false), 4000);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 rounded-lg p-4 md:p-6 border border-slate-700 hover:border-green-500/50 transition-all">
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">
+            {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+          <ImportanceBadge importance={match.importance} />
+        </div>
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+            isDraw ? 'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+          }`}
+        >
+          {isDraw ? '🤝 Draw' : '✓ FT'}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div
+            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0"
+            style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+          >
+            {match.homeFaculty.abbreviation}
+          </div>
+          <span className={`text-xs md:text-sm font-bold truncate ${homeWon ? 'text-white' : 'text-gray-400'}`}>
+            {match.homeFaculty.name}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+          <span className="text-xl md:text-2xl font-black text-white">{match.scoreHome}</span>
+          <span className="text-gray-500 text-sm md:text-base">−</span>
+          <span className="text-xl md:text-2xl font-black text-white">{match.scoreAway}</span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+          <span className={`text-xs md:text-sm font-bold truncate text-right ${awayWon ? 'text-white' : 'text-gray-400'}`}>
+            {match.awayFaculty.name}
+          </span>
+          <div
+            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0"
+            style={{ backgroundColor: match.awayFaculty.colorPrimary }}
+          >
+            {match.awayFaculty.abbreviation}
+          </div>
+        </div>
+      </div>
+
+      {/* ✅ CHEER MESSAGE */}
+      {showCheer && (
+        <div className="mb-4 p-3 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 border-l-4 border-yellow-400 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <MessageCircle size={18} className="text-yellow-300 flex-shrink-0 animate-bounce" />
+            <p className="text-sm font-bold text-yellow-100">{cheerMessage}</p>
+            <button
+              onClick={() => setShowCheer(false)}
+              className="text-yellow-300 hover:text-yellow-200 flex-shrink-0 ml-auto transition-colors"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ERROR */}
+      {error && (
+        <p className="text-red-400 text-xs font-semibold mb-2 text-center">⚠️ {error}</p>
+      )}
+
+      {/* LIKE BUTTONS */}
+      <div className="flex items-center justify-between gap-3">
+        <button
+          onClick={() => handleLike(match.homeFaculty.id)}
+          disabled={isLoading}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
+            isHomeLiked
+              ? 'bg-red-600 text-white shadow-lg shadow-red-500/40 scale-105'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          } ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
+        >
+          <Heart size={16} fill={isHomeLiked ? 'white' : 'none'} className={isHomeLiked ? 'animate-pulse' : ''} />
+          <span>{homeLikes}</span>
+        </button>
+
+        <button
+          onClick={() => handleLike(match.awayFaculty.id)}
+          disabled={isLoading}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-all ml-auto ${
+            isAwayLiked
+              ? 'bg-red-600 text-white shadow-lg shadow-red-500/40 scale-105'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          } ${isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
+        >
+          <span>{awayLikes}</span>
+          <Heart size={16} fill={isAwayLiked ? 'white' : 'none'} className={isAwayLiked ? 'animate-pulse' : ''} />
+        </button>
+      </div>
+    </div>
+  );
+}
+// ============================================
 // STANDINGS LEGEND
 // ============================================
 function StandingsLegend() {
   const legendItems = [
     { label: 'P', fullName: 'Played', icon: '📊', color: 'from-blue-500 to-blue-600' },
     { label: 'W', fullName: 'Won', icon: '✅', color: 'from-green-500 to-green-600' },
-    { label:  'D', fullName: 'Drawn', icon: '🤝', color: 'from-yellow-500 to-yellow-600' },
-    { label:  'L', fullName: 'Lost', icon: '❌', color: 'from-red-500 to-red-600' },
+    { label: 'D', fullName: 'Drawn', icon: '🤝', color: 'from-yellow-500 to-yellow-600' },
+    { label: 'L', fullName: 'Lost', icon: '❌', color: 'from-red-500 to-red-600' },
     { label: 'GF', fullName: 'Goals For', icon: '⚽', color: 'from-cyan-500 to-cyan-600' },
     { label: 'GA', fullName: 'Goals Against', icon: '🥅', color: 'from-orange-500 to-orange-600' },
     { label: 'GD', fullName: 'Goal Difference', icon: '📈', color: 'from-purple-500 to-purple-600' },
@@ -397,7 +523,7 @@ function StandingsLegend() {
         <Trophy size={24} className="text-yellow-400" />
         <h3 className="text-lg font-black text-white">Legend</h3>
       </div>
-      
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
         {legendItems.map((item, index) => (
           <div
@@ -407,7 +533,7 @@ function StandingsLegend() {
             <div className="text-2xl mb-1 group-hover:scale-125 transition-transform">{item.icon}</div>
             <div className="text-white font-black text-lg">{item.label}</div>
             <div className="text-white/70 text-xs font-bold mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 backdrop-blur z-10">
-              {item. fullName}
+              {item.fullName}
             </div>
           </div>
         ))}
@@ -418,24 +544,24 @@ function StandingsLegend() {
 
 // ============================================
 // RESPONSIVE STANDINGS TABLE
-// ============================================
 function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
   return (
     <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
-      <div className="overflow-x-auto scrollbar-hide">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-slate-800 to-slate-700 border-b border-slate-700">
-              <th className="px-4 py-3 text-left text-xs font-black text-gray-300 uppercase min-w-16">Pos</th>
-              <th className="px-4 py-3 text-left text-xs font-black text-gray-300 uppercase min-w-48">Faculty</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">P</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">W</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">D</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">L</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">GF</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">GA</th>
-              <th className="px-3 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-12">GD</th>
-              <th className="px-4 py-3 text-center text-xs font-black text-gray-300 uppercase min-w-16">Pts</th>
+              <th className="px-3 md:px-4 py-3 text-left text-xs font-black text-gray-300 uppercase">Pos</th>
+              <th className="px-3 md:px-4 py-3 text-left text-xs font-black text-gray-300 uppercase">Faculty</th>
+              <th className="px-2 md:px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">P</th>
+              <th className="px-2 md:px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">W</th>
+              <th className="px-2 md:px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">D</th>
+              <th className="px-2 md:px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">L</th>
+              {/* ✅ Hidden on mobile, visible from md up */}
+              <th className="hidden md:table-cell px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">GF</th>
+              <th className="hidden md:table-cell px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">GA</th>
+              <th className="hidden md:table-cell px-3 py-3 text-center text-xs font-black text-gray-300 uppercase">GD</th>
+              <th className="px-3 md:px-4 py-3 text-center text-xs font-black text-gray-300 uppercase">Pts</th>
             </tr>
           </thead>
           <tbody>
@@ -446,45 +572,38 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
                   index < 3 ? 'bg-gradient-to-r from-yellow-950/30 to-transparent' : ''
                 }`}
               >
-                <td className="px-4 py-3">
-                  <span className="text-lg font-black">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' :  index === 2 ? '🥉' : `#${index + 1}`}
+                <td className="px-3 md:px-4 py-3">
+                  <span className="text-base md:text-lg font-black">
+                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 md:px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0"
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs font-black flex-shrink-0"
                       style={{ backgroundColor: faculty.colorPrimary }}
                     >
                       {faculty.abbreviation}
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-white font-bold text-sm truncate">{faculty.name}</p>
-                    </div>
+                    {/* ✅ Show full name on md+, abbreviation already visible in badge on mobile */}
+                    <p className="hidden sm:block text-white font-bold text-sm truncate">{faculty.name}</p>
                   </div>
                 </td>
-                <td className="px-3 py-3 text-center text-white font-bold text-sm">{faculty.played}</td>
-                <td className="px-3 py-3 text-center text-green-400 font-bold text-sm">{faculty.won}</td>
-                <td className="px-3 py-3 text-center text-yellow-400 font-bold text-sm">{faculty. drawn}</td>
-                <td className="px-3 py-3 text-center text-red-400 font-bold text-sm">{faculty.lost}</td>
-                <td className="px-3 py-3 text-center text-blue-400 font-bold text-sm">{faculty.goalsFor}</td>
-                <td className="px-3 py-3 text-center text-red-400 font-bold text-sm">{faculty.goalsAgainst}</td>
-                <td
-                  className={`px-3 py-3 text-center font-bold text-sm ${
-                    faculty.goalDifference > 0
-                      ? 'text-green-400'
-                      : faculty.goalDifference < 0
-                      ? 'text-red-400'
-                      :  'text-gray-400'
-                  }`}
-                >
-                  {faculty.goalDifference > 0 ?  '+' : ''}
-                  {faculty.goalDifference}
+                <td className="px-2 md:px-3 py-3 text-center text-white font-bold text-sm">{faculty.played}</td>
+                <td className="px-2 md:px-3 py-3 text-center text-green-400 font-bold text-sm">{faculty.won}</td>
+                <td className="px-2 md:px-3 py-3 text-center text-yellow-400 font-bold text-sm">{faculty.drawn}</td>
+                <td className="px-2 md:px-3 py-3 text-center text-red-400 font-bold text-sm">{faculty.lost}</td>
+                {/* ✅ Hidden on mobile */}
+                <td className="hidden md:table-cell px-3 py-3 text-center text-blue-400 font-bold text-sm">{faculty.goalsFor}</td>
+                <td className="hidden md:table-cell px-3 py-3 text-center text-red-400 font-bold text-sm">{faculty.goalsAgainst}</td>
+                <td className={`hidden md:table-cell px-3 py-3 text-center font-bold text-sm ${
+                  faculty.goalDifference > 0 ? 'text-green-400' : faculty.goalDifference < 0 ? 'text-red-400' : 'text-gray-400'
+                }`}>
+                  {faculty.goalDifference > 0 ? '+' : ''}{faculty.goalDifference}
                 </td>
-                <td className="px-4 py-3 text-center">
-                  <span className="text-2xl font-black bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
-                    {faculty. points}
+                <td className="px-3 md:px-4 py-3 text-center">
+                  <span className="text-lg md:text-2xl font-black bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
+                    {faculty.points}
                   </span>
                 </td>
               </tr>
@@ -493,9 +612,15 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
         </table>
       </div>
 
-      <div className="sm:hidden px-4 py-2 bg-slate-800/50 text-center">
-        <p className="text-xs text-gray-500">← Swipe to see all columns →</p>
-      </div>
+      {/* ✅ Mobile hint that full stats are on the full standings page */}
+      <div className="md:hidden px-4 py-3 bg-slate-800/50 text-center border-t border-slate-700">
+  <p className="text-xs text-gray-400 font-semibold">
+    📊 GF, GA & GD —{' '}
+    <Link href="/standingsnav" className="text-yellow-400 font-bold hover:text-yellow-300 underline underline-offset-2 transition">
+      View Full Standings →
+    </Link>
+  </p>
+</div>
     </div>
   );
 }
@@ -504,9 +629,6 @@ function ResponsiveStandingsTable({ standings }: { standings: Faculty[] }) {
 // MAIN HOME PAGE
 // ============================================
 export default function LASUBallersHomePage() {
-  // ============================================
-  // ALL HOOKS DECLARED FIRST
-  // ============================================
   const router = useRouter();
   const { data: session, status } = useSession();
   const [data, setData] = useState<HomeData | null>(null);
@@ -515,9 +637,6 @@ export default function LASUBallersHomePage() {
 
   const { animateHero, animateLive, animateStats, animateUpcoming, animateRecent, animateStandings } = useStaggerAnimation();
 
-  // ============================================
-  // FETCH DATA EFFECT
-  // ============================================
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -537,7 +656,7 @@ export default function LASUBallersHomePage() {
         setData(homeData);
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message :  'Failed to load data');
+        setError(err instanceof Error ? err.message : 'Failed to load data');
         setData({
           liveMatches: [],
           upcomingMatches: [],
@@ -559,18 +678,12 @@ export default function LASUBallersHomePage() {
     fetchData();
   }, []);
 
-  // ============================================
-  // SESSION PROTECTION EFFECT
-  // ============================================
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
 
-  // ============================================
-  // RENDER CONDITIONS (AFTER ALL HOOKS)
-  // ============================================
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
@@ -617,9 +730,6 @@ export default function LASUBallersHomePage() {
     );
   }
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
   return (
     <>
       <FloatingWhatsAppButton />
@@ -639,12 +749,9 @@ export default function LASUBallersHomePage() {
               animateHero ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
             }`}
           >
-            {/* Hero Carousel Background */}
             <HeroCarousel />
 
-            {/* Hero Content */}
             <div className="relative z-20 container mx-auto px-4 text-center space-y-6 max-w-4xl">
-              {/* Badge - POP UP ANIMATION */}
               <div className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-500/30 border border-blue-500/50 rounded-full backdrop-blur-md animate-pulse transition-all duration-700 ${
                 animateHero ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
               }`}>
@@ -652,24 +759,20 @@ export default function LASUBallersHomePage() {
                 <span className="text-sm font-bold text-blue-300">⚽ Championship Live Now</span>
               </div>
 
-              {/* Main Title */}
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-white leading-tight drop-shadow-2xl">
                 <span className="bg-gradient-to-r from-red-400 via-yellow-300 to-orange-400 bg-clip-text text-transparent">
                   LASU LIVE
                 </span>
               </h1>
 
-              {/* Subtitle */}
-              <h2 className="text-3xl md:text-4xl lg: text-5xl font-black text-white drop-shadow-2xl">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-2xl">
                 SCORES
               </h2>
 
-              {/* Description */}
               <p className="text-lg md:text-xl text-gray-100 font-semibold max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-                Experience football like never before.  Real-time scores, thrilling matchups, championship glory.  Join thousands of passionate students! 
+                Experience football like never before. Real-time scores, thrilling matchups, championship glory. Join thousands of passionate students!
               </p>
 
-              {/* CTA Buttons */}
               <div className="flex flex-wrap justify-center gap-4 pt-8">
                 <Link
                   href="/livescorespagenav"
@@ -695,7 +798,6 @@ export default function LASUBallersHomePage() {
               </div>
             </div>
 
-            {/* Scroll Indicator */}
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 animate-bounce">
               <div className="w-6 h-10 border-2 border-white rounded-full flex items-center justify-center">
                 <div className="w-1 h-2 bg-white rounded-full animate-pulse"></div>
@@ -703,7 +805,7 @@ export default function LASUBallersHomePage() {
             </div>
           </div>
 
-          {/* ============= LIVE MATCHES - SLIDE FROM RIGHT ============= */}
+          {/* ============= LIVE MATCHES ============= */}
           {data.liveMatches.length > 0 && (
             <div
               className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
@@ -726,14 +828,20 @@ export default function LASUBallersHomePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {data. liveMatches.map((match) => (
-                  <LiveMatchCard key={match.id} match={match} />
+                {data.liveMatches.map((match) => (
+                  <LiveMatchCard
+                    key={match.id}
+                    match={match}
+                    initialHomeLikesCount={match.homeLikesCount || 0}
+                    initialAwayLikesCount={match.awayLikesCount || 0}
+                    initialUserLikedFacultyId={match.userLikedFacultyId || null}
+                  />
                 ))}
               </div>
             </div>
           )}
 
-          {/* ============= STATS - POP UP ANIMATION ============= */}
+          {/* ============= STATS ============= */}
           <div
             className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
               animateStats ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
@@ -759,14 +867,14 @@ export default function LASUBallersHomePage() {
               />
               <StatCard
                 label="Matches"
-                value={data.stats. totalMatches}
+                value={data.stats.totalMatches}
                 icon={Activity}
                 gradient="bg-gradient-to-br from-purple-950/40 to-purple-900/30 border-purple-500/30"
                 subtext="⚽ Total competitions"
               />
               <StatCard
                 label="Avg Goals/Match"
-                value={data. stats.avgGoals}
+                value={data.stats.avgGoals}
                 icon={TrendingUp}
                 gradient="bg-gradient-to-br from-green-950/40 to-emerald-950/30 border-green-500/30"
                 subtext="📊 Per game"
@@ -774,7 +882,7 @@ export default function LASUBallersHomePage() {
               {data.stats.longestStreak && (
                 <StatCard
                   label="Hot Streak"
-                  value={data.stats.longestStreak. currentStreak}
+                  value={data.stats.longestStreak.currentStreak}
                   icon={Award}
                   gradient="bg-gradient-to-br from-amber-950/40 to-yellow-950/30 border-amber-500/30"
                   subtext={`🔥 ${data.stats.longestStreak.name}`}
@@ -783,7 +891,7 @@ export default function LASUBallersHomePage() {
             </div>
           </div>
 
-          {/* ============= UPCOMING - SLIDE FROM LEFT ============= */}
+          {/* ============= UPCOMING FIXTURES ============= */}
           {data.upcomingMatches.length > 0 && (
             <div
               className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
@@ -797,7 +905,7 @@ export default function LASUBallersHomePage() {
                     <span className="text-sm font-bold text-orange-400">⏱️ COMING SOON</span>
                   </div>
                 </div>
-                <h2 className="text-4xl md: text-5xl font-black text-white">
+                <h2 className="text-4xl md:text-5xl font-black text-white">
                   <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
                     UPCOMING FIXTURES
                   </span>
@@ -822,7 +930,7 @@ export default function LASUBallersHomePage() {
                           className="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                           style={{ backgroundColor: match.homeFaculty.colorPrimary }}
                         >
-                          {match. homeFaculty.abbreviation}
+                          {match.homeFaculty.abbreviation}
                         </div>
                         <span className="text-white font-bold text-sm">{match.homeFaculty.name}</span>
                         <span className="text-gray-500">vs</span>
@@ -834,7 +942,7 @@ export default function LASUBallersHomePage() {
                           {match.awayFaculty.abbreviation}
                         </div>
                       </div>
-                      <Link href={`/fixtures? match=${match.id}`} className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-bold transition">
+                      <Link href={`/fixtures?match=${match.id}`} className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-bold transition hover:bg-orange-600/30">
                         View
                       </Link>
                     </div>
@@ -844,7 +952,7 @@ export default function LASUBallersHomePage() {
             </div>
           )}
 
-          {/* ============= RECENT RESULTS - SLIDE FROM RIGHT ============= */}
+          {/* ============= RECENT RESULTS ============= */}
           {data.recentMatches.length > 0 && (
             <div
               className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
@@ -858,7 +966,7 @@ export default function LASUBallersHomePage() {
                     <span className="text-sm font-bold text-green-400">✅ MATCH RESULTS</span>
                   </div>
                 </div>
-                <h2 className="text-4xl md: text-5xl font-black text-white">
+                <h2 className="text-4xl md:text-5xl font-black text-white">
                   <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                     RECENT RESULTS
                   </span>
@@ -867,76 +975,14 @@ export default function LASUBallersHomePage() {
               </div>
 
               <div className="space-y-4">
-                {data.recentMatches.map((match) => {
-                  const homeWon = match.scoreHome > match.scoreAway;
-                  const awayWon = match.scoreAway > match.scoreHome;
-                  const isDraw = match.scoreHome === match.scoreAway;
-
-                  return (
-                    <div key={match.id} className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 rounded-lg p-4 md:p-6 border border-slate-700 hover:border-green-500/50 transition-all">
-                      {/* Top Row:  Date & Badge */}
-                      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700 flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">
-                            {new Date(match.finishedAt || match.matchDate).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </span>
-                          <ImportanceBadge importance={match. importance} />
-                        </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
-                            isDraw ? 'bg-yellow-500/20 text-yellow-400' : homeWon ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                          }`}
-                        >
-                          {isDraw ? '🤝 Draw' : '✓ FT'}
-                        </span>
-                      </div>
-
-                      {/* Score Row - Optimized for Mobile */}
-                      <div className="flex items-center justify-between gap-2">
-                        {/* Home Team */}
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div
-                            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0"
-                            style={{ backgroundColor: match.homeFaculty.colorPrimary }}
-                          >
-                            {match.homeFaculty. abbreviation}
-                          </div>
-                          <span className={`text-xs md:text-sm font-bold truncate ${homeWon ? 'text-white' : 'text-gray-400'}`}>
-                            {match.homeFaculty.name}
-                          </span>
-                        </div>
-
-                        {/* Score */}
-                        <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                          <span className="text-xl md:text-2xl font-black text-white">{match.scoreHome}</span>
-                          <span className="text-gray-500 text-sm md:text-base">−</span>
-                          <span className="text-xl md:text-2xl font-black text-white">{match. scoreAway}</span>
-                        </div>
-
-                        {/* Away Team */}
-                        <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
-                          <span className={`text-xs md:text-sm font-bold truncate text-right ${awayWon ? 'text-white' : 'text-gray-400'}`}>
-                            {match.awayFaculty.name}
-                          </span>
-                          <div
-                            className="w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white text-xs md:text-sm font-bold flex-shrink-0"
-                            style={{ backgroundColor: match. awayFaculty.colorPrimary }}
-                          >
-                            {match.awayFaculty.abbreviation}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {data.recentMatches.map((match) => (
+                  <MatchResultCard key={match.id} match={match} />
+                ))}
               </div>
             </div>
           )}
 
-          {/* ============= STANDINGS - SLIDE FROM LEFT + LEGEND ============= */}
+          {/* ============= STANDINGS ============= */}
           {data.standings.length > 0 && (
             <div
               className={`transition-all duration-1000 container mx-auto px-4 py-20 border-t border-slate-800 ${
@@ -950,7 +996,7 @@ export default function LASUBallersHomePage() {
                     <span className="text-sm font-bold text-yellow-400">🏆 RANKINGS</span>
                   </div>
                 </div>
-                <h2 className="text-4xl md: text-5xl font-black text-white">
+                <h2 className="text-4xl md:text-5xl font-black text-white">
                   <span className="bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
                     CHAMPIONSHIP STANDINGS
                   </span>
@@ -958,17 +1004,15 @@ export default function LASUBallersHomePage() {
                 <p className="text-gray-400 font-semibold mt-3">Competitive matches only • Updated live 🔄</p>
               </div>
 
-              {/* LEGEND BEFORE TABLE */}
               <StandingsLegend />
-
               <ResponsiveStandingsTable standings={data.standings} />
 
               <div className="text-center mt-10">
                 <Link
-                  href="/women/standings"
+                  href="/standingsnav"
                   className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white rounded-lg font-bold transition-all transform hover:scale-105"
                 >
-                  View women's Standings
+                  View Full Standings
                   <ArrowRight size={20} />
                 </Link>
               </div>
@@ -982,11 +1026,11 @@ export default function LASUBallersHomePage() {
                 Never Miss a Match ⚽
               </h3>
               <p className="text-lg text-gray-300 font-semibold mb-8 max-w-2xl mx-auto">
-                Get instant notifications for live matches, final scores, and championship updates! 
+                Get instant notifications for live matches, final scores, and championship updates!
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href="/"
+                  href="https://chat.whatsapp.com/IDLMPDJkuz0JtYfwBzpPJb"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-black transition-all transform hover:scale-110 shadow-lg shadow-green-500/30"
@@ -995,28 +1039,26 @@ export default function LASUBallersHomePage() {
                   Join WhatsApp
                 </Link>
                 <Link
-                  href="/women/standings"
+                  href="/standings"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black transition-all transform hover:scale-110 border border-slate-700"
                 >
                   <Trophy size={20} />
-                  See women standings 
+                  View Standings
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* Footer Spacing */}
           <div className="h-20"></div>
         </div>
 
-        {/* Scrollbar Styling */}
         <style jsx>{`
-          .scrollbar-hide: :-webkit-scrollbar {
+          .scrollbar-hide::-webkit-scrollbar {
             display: none;
           }
           .scrollbar-hide {
             -ms-overflow-style: none;
-            scrollbar-width:  none;
+            scrollbar-width: none;
           }
         `}</style>
       </div>

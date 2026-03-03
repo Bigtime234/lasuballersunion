@@ -21,6 +21,7 @@ export const users = pgTable('user', {
   emailVerified: timestamp('emailVerified'),
   image: text('image'),
   role: userRoleEnum('role').notNull().default('user'),
+  facultyId: integer('faculty_id').references(() => faculties.id),
   twoFactorEnabled: booleanColumn('two_factor_enabled').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -89,8 +90,8 @@ export const seasonStandings = pgTable('season_standings', {
   id: serial('id').primaryKey(),
   seasonId: integer('season_id').notNull().references(() => seasons.id, { onDelete: 'cascade' }),
   facultyId: integer('faculty_id').notNull().references(() => faculties.id, { onDelete: 'cascade' }),
-  category: matchCategoryEnum('category').notNull(), // 'men' or 'women'
-  finalPosition: integer('final_position').notNull(), // 1st, 2nd, 3rd...
+  category: matchCategoryEnum('category').notNull(),
+  finalPosition: integer('final_position').notNull(),
   played: integer('played').notNull().default(0),
   won: integer('won').notNull().default(0),
   drawn: integer('drawn').notNull().default(0),
@@ -121,8 +122,6 @@ export const faculties = pgTable('faculties', {
   colorPrimary: text('color_primary').notNull().default('#3B82F6'),
   colorSecondary: text('color_secondary').notNull().default('#1E40AF'),
   logo: text('logo'),
-  // NOTE: These stats columns are kept for backward compatibility
-  // but are NOT used for display (calculated from matches instead)
   played: integer('played').notNull().default(0),
   won: integer('won').notNull().default(0),
   drawn: integer('drawn').notNull().default(0),
@@ -174,10 +173,15 @@ export const matchLikes = pgTable('match_likes', {
   id: serial('id').primaryKey(),
   matchId: integer('match_id').notNull().references(() => matches.id, { onDelete: 'cascade' }),
   userId: varchar('user_id', { length: 255 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  likedFacultyId: integer('liked_faculty_id').notNull().references(() => faculties.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => {
   return {
-    uniqueUserMatch: uniqueIndex('unique_user_match_idx').on(table.userId, table.matchId),
+    uniqueUserMatchTeam: uniqueIndex('unique_user_match_team_idx').on(
+      table.userId, 
+      table.matchId, 
+      table.likedFacultyId
+    ),
   };
 });
 
@@ -317,6 +321,11 @@ export const matchLikesRelations = relations(matchLikes, ({ one }) => ({
   user: one(users, {
     fields: [matchLikes.userId],
     references: [users.id],
+  }),
+  // ✅ ADD THIS RELATION (WAS MISSING)
+  likedFaculty: one(faculties, {
+    fields: [matchLikes.likedFacultyId],
+    references: [faculties.id],
   }),
 }));
 
