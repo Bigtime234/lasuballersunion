@@ -3,10 +3,14 @@ import { MatchForm } from '@/app/control-center/components/match-form';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+// ✅ Force fresh DB fetch on every visit — never serve cached faculties
+export const dynamic = 'force-dynamic';
+
 export default async function CreateMatchPage() {
-  const allFaculties = await db.query. faculties.findMany({
+  const allFaculties = await db.query.faculties.findMany({
     orderBy: (faculties, { asc }) => [asc(faculties.name)],
   });
+
   const allSeasons = await db.query.seasons.findMany({
     orderBy: (seasons, { desc }) => [desc(seasons.startDate)],
   });
@@ -25,7 +29,6 @@ export default async function CreateMatchPage() {
           <p className="text-gray-400 font-semibold mt-1">Fill in the details below</p>
         </div>
       </div>
-
       <MatchForm faculties={allFaculties} seasons={allSeasons} />
     </div>
   );

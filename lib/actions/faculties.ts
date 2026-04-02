@@ -4,6 +4,7 @@ import { db } from '@/server';
 import { faculties } from '@/server/schema';
 import { eq } from 'drizzle-orm';
 import { createFacultySchema, updateFacultySchema } from '@/Types/faculties';
+import { ZodError } from 'zod';
 import { auth } from '@/server/auth';
 import { logAdminActivity } from './activity-log';
 import { revalidatePath } from 'next/cache';
@@ -11,7 +12,7 @@ import { revalidatePath } from 'next/cache';
 export async function createFaculty(data: unknown) {
   try {
     const session = await auth();
-    if (!session || session.user. role !== 'admin') {
+    if (!session || session.user.role !== 'admin') {
       return { error: 'Unauthorized - Admin access required' };
     }
 
@@ -30,7 +31,7 @@ export async function createFaculty(data: unknown) {
       .insert(faculties)
       .values({
         name: validatedData.name,
-        abbreviation: validatedData. abbreviation. toUpperCase(),
+        abbreviation: validatedData.abbreviation.toUpperCase(),
         colorPrimary: validatedData.colorPrimary,
         colorSecondary: validatedData.colorSecondary,
         logo: validatedData.logo || null,
@@ -56,11 +57,15 @@ export async function createFaculty(data: unknown) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/faculties');
+    revalidatePath('/control-center/matches/new'); // ✅ Added
     revalidatePath('/faculties');
     revalidatePath('/standings');
 
     return { success: true, faculty: newFaculty };
   } catch (error: any) {
+    if (error instanceof ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error('Create faculty error:', error);
     return { error: error.message || 'Failed to create faculty' };
   }
@@ -69,7 +74,7 @@ export async function createFaculty(data: unknown) {
 export async function updateFaculty(facultyId: number, data: unknown) {
   try {
     const session = await auth();
-    if (!session || session.user. role !== 'admin') {
+    if (!session || session.user.role !== 'admin') {
       return { error: 'Unauthorized' };
     }
 
@@ -98,10 +103,15 @@ export async function updateFaculty(facultyId: number, data: unknown) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/faculties');
+    revalidatePath('/control-center/matches/new'); // ✅ Added
     revalidatePath('/faculties');
+    revalidatePath('/standings'); // ✅ Added
 
     return { success: true, faculty: updatedFaculty };
   } catch (error: any) {
+    if (error instanceof ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error('Update faculty error:', error);
     return { error: error.message || 'Failed to update faculty' };
   }
@@ -114,7 +124,7 @@ export async function getFaculty(facultyId: number) {
     });
     return faculty || null;
   } catch (error) {
-    console. error('Error fetching faculty:', error);
+    console.error('Error fetching faculty:', error);
     return null;
   }
 }
@@ -150,10 +160,15 @@ export async function deleteFaculty(facultyId: number) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/faculties');
+    revalidatePath('/control-center/matches/new'); // ✅ Added
     revalidatePath('/faculties');
+    revalidatePath('/standings'); // ✅ Added
 
     return { success: true };
   } catch (error: any) {
+    if (error instanceof ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error('Delete faculty error:', error);
     return { error: error.message || 'Failed to delete faculty' };
   }

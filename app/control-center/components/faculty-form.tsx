@@ -24,6 +24,7 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
     handleSubmit,
     formState: { errors },
     watch,
+    setValue, // ✅ Added
   } = useForm<any>({
     resolver: zodResolver(createFacultySchema),
     defaultValues: initialData || {
@@ -36,6 +37,7 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
   });
 
   const colorPrimary = watch('colorPrimary');
+  const colorSecondary = watch('colorSecondary');
   const abbreviation = watch('abbreviation');
 
   React.useEffect(() => {
@@ -54,13 +56,13 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
         result = await createFaculty(data);
       }
 
-      if (result. error) {
+      if (result.error) {
         setServerError(result.error);
         return;
       }
 
       router.push('/control-center/faculties');
-      router.refresh();
+      // ✅ Removed router.refresh() — revalidatePath in server action handles this
     } catch (error: any) {
       setServerError(error.message || 'An error occurred');
     } finally {
@@ -69,7 +71,8 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-linear-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 max-w-2xl">
+    // ✅ Fixed: bg-gradient-to-br (was bg-linear-to-br)
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-700 max-w-2xl">
       
       {/* Error Alert */}
       {serverError && (
@@ -88,7 +91,7 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
           {...register('name')}
           className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition"
         />
-        {errors. name && (
+        {errors.name && (
           <p className="text-red-400 text-sm mt-1">{errors.name.message as string}</p>
         )}
       </div>
@@ -113,7 +116,7 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
             </div>
           )}
         </div>
-        {errors. abbreviation && (
+        {errors.abbreviation && (
           <p className="text-red-400 text-sm mt-1">{errors.abbreviation.message as string}</p>
         )}
       </div>
@@ -123,14 +126,16 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
         <div>
           <label className="block text-sm font-bold text-gray-300 mb-2">Primary Color</label>
           <div className="flex gap-3">
+            {/* ✅ Fixed: color picker uses onChange + setValue instead of duplicate register */}
             <input
               type="color"
-              {... register('colorPrimary')}
+              value={colorPrimary}
+              onChange={(e) => setValue('colorPrimary', e.target.value)}
               className="w-16 h-12 rounded-lg cursor-pointer border border-slate-600"
             />
             <input
               type="text"
-              {... register('colorPrimary')}
+              {...register('colorPrimary')}
               placeholder="#000000"
               className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white font-mono focus:border-blue-500 outline-none transition"
             />
@@ -143,9 +148,11 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
         <div>
           <label className="block text-sm font-bold text-gray-300 mb-2">Secondary Color</label>
           <div className="flex gap-3">
+            {/* ✅ Fixed: same fix for colorSecondary */}
             <input
               type="color"
-              {...register('colorSecondary')}
+              value={colorSecondary}
+              onChange={(e) => setValue('colorSecondary', e.target.value)}
               className="w-16 h-12 rounded-lg cursor-pointer border border-slate-600"
             />
             <input
@@ -170,7 +177,7 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
           {...register('logo')}
           className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition"
         />
-        {errors. logo && (
+        {errors.logo && (
           <p className="text-red-400 text-sm mt-1">{errors.logo.message as string}</p>
         )}
       </div>
@@ -180,9 +187,10 @@ export function FacultyForm({ initialData, isEditing = false }: FacultyFormProps
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-6 py-3 bg-linear-to-r from-blue-500 to-blue-600 text-white rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          // ✅ Fixed: bg-gradient-to-r (was bg-linear-to-r)
+          className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-bold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
         >
-          {isSubmitting ?  (
+          {isSubmitting ? (
             <>
               <Loader size={20} className="animate-spin" />
               Processing...
