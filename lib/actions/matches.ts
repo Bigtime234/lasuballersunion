@@ -18,14 +18,11 @@ export async function createMatch(data: unknown) {
 
     const validatedData = createMatchSchema.parse(data);
 
-    // AUTO-GET ACTIVE SEASON
     const activeSeason = await getActiveSeason();
-    
     if (!activeSeason) {
       return { error: 'No active season found. Please create a season first at /control-center/seasons' };
     }
 
-    // Verify faculties exist and are different
     if (validatedData.homeFacultyId === validatedData.awayFacultyId) {
       return { error: 'Home and away faculties must be different' };
     }
@@ -44,7 +41,7 @@ export async function createMatch(data: unknown) {
       .values({
         homeFacultyId: validatedData.homeFacultyId,
         awayFacultyId: validatedData.awayFacultyId,
-        seasonId: activeSeason.id, // ← AUTO-USE ACTIVE SEASON
+        seasonId: activeSeason.id,
         category: validatedData.category,
         matchDate: new Date(validatedData.matchDate),
         venue: validatedData.venue,
@@ -67,6 +64,7 @@ export async function createMatch(data: unknown) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/matches');
+    revalidatePath('/control-center/scores'); // ✅ Added
     revalidatePath('/live');
     revalidatePath('/');
     revalidatePath('/women');
@@ -87,7 +85,6 @@ export async function updateMatchScore(matchId: number, data: unknown) {
 
     const validatedData = updateScoreSchema.parse(data);
 
-    // Get current match
     const currentMatch = await db.query.matches.findFirst({
       where: eq(matches.id, matchId),
       with: {
@@ -100,7 +97,6 @@ export async function updateMatchScore(matchId: number, data: unknown) {
       return { error: 'Match not found' };
     }
 
-    // Build update data
     const updateData: any = {
       scoreHome: validatedData.scoreHome,
       scoreAway: validatedData.scoreAway,
@@ -109,7 +105,6 @@ export async function updateMatchScore(matchId: number, data: unknown) {
       updatedAt: new Date(),
     };
 
-    // Handle status transitions
     if (validatedData.status === 'LIVE' && currentMatch.status === 'PENDING') {
       updateData.startedAt = new Date();
     }
@@ -124,10 +119,6 @@ export async function updateMatchScore(matchId: number, data: unknown) {
       .where(eq(matches.id, matchId))
       .returning();
 
-    // NOTE: Faculty stats are NO LONGER updated here
-    // Standings are calculated on-the-fly from matches in API routes
-    // When season ends, standings are snapshotted to season_standings table
-
     await logAdminActivity(
       session.user.id,
       'UPDATE_SCORE',
@@ -138,6 +129,7 @@ export async function updateMatchScore(matchId: number, data: unknown) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/scores');
+    revalidatePath(`/control-center/scores/${matchId}`); // ✅ Added — revalidates the specific match page
     revalidatePath('/live');
     revalidatePath('/standings');
     revalidatePath('/fixtures');
@@ -180,6 +172,7 @@ export async function updateMatch(matchId: number, data: unknown) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/matches');
+    revalidatePath('/control-center/scores'); // ✅ Added
 
     return { success: true, match: updatedMatch };
   } catch (error: any) {
@@ -198,7 +191,6 @@ export async function getMatch(matchId: number) {
         season: true,
       }
     });
-
     return match || null;
   } catch (error) {
     console.error('Error fetching match:', error);
@@ -225,6 +217,7 @@ export async function deleteMatch(matchId: number) {
 
     revalidatePath('/control-center');
     revalidatePath('/control-center/matches');
+    revalidatePath('/control-center/scores'); // ✅ Added
 
     return { success: true };
   } catch (error: any) {

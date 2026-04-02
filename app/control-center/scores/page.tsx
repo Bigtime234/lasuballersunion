@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { eq, or } from 'drizzle-orm';
 import { Flame, Clock } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ScoresPage() {
   // Get LIVE and PENDING matches
   const activeMatches = await db. query.matches.findMany({
