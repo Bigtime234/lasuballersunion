@@ -162,75 +162,77 @@ function StatCard({
 // ============================================
 // LIVE MATCH CARD
 // ============================================
-// ============================================
 // LIVE MATCH CARD
+// ============================================
 function LiveMatchCard({ match, category }: { match: Match; category: 'men' | 'women' }) {
-  const isWomen = category === 'women';
-  const accentColor = isWomen ? 'rgba(236,72,153,0.35)' : 'rgba(239,68,68,0.35)';
-  const accentBg = isWomen ? 'rgba(236,72,153,0.1)' : 'rgba(239,68,68,0.1)';
-  const accentBorder = isWomen ? 'rgba(236,72,153,0.2)' : 'rgba(239,68,68,0.2)';
-  const pillBg = isWomen ? '#ec4899' : '#ef4444';
+  const borderColor = category === 'men' ? 'border-red-500/50' : 'border-pink-500/50';
+  const shadowColor = category === 'men' ? 'shadow-red-500/20' : 'shadow-pink-500/20';
+  const gradientFrom = category === 'men' ? 'from-red-950' : 'from-pink-950';
+  const gradientTo = category === 'men' ? 'to-red-900' : 'to-pink-900';
+  const pulseColor = category === 'men' ? 'bg-red-500' : 'bg-pink-500';
 
   return (
-    <div style={{ border: `1.5px solid ${accentColor}` }} className="bg-slate-900 rounded-2xl overflow-hidden">
+    <div className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} border-2 ${borderColor} rounded-xl p-4 sm:p-6 shadow-lg ${shadowColor}`}>
       
-      {/* Top Bar */}
-      <div style={{ background: accentBg, borderBottom: `1px solid ${accentBorder}` }} className="flex items-center justify-between px-4 py-2.5 gap-2">
-        <span style={{ background: pillBg }} className="flex items-center gap-1.5 text-white text-xs font-black px-3 py-1 rounded-full animate-pulse">
-          <span className="w-1.5 h-1.5 bg-white rounded-full inline-block" />
-          LIVE {match.matchMinute || 0}'
-        </span>
-        <ImportanceBadge importance={match.importance} />
+      {/* Top Row — Live badge + importance + update link */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`px-3 py-1 ${pulseColor} text-white rounded-full text-xs font-black animate-pulse flex items-center gap-1`}>
+            <div className="w-2 h-2 bg-white rounded-full" />
+            LIVE {match.matchMinute || 0}'
+          </span>
+          <ImportanceBadge importance={match.importance} />
+        </div>
         <Link
           href={`/control-center/scores/${match.id}`}
-          className="text-xs font-bold text-gray-400 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition touch-manipulation"
+          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition touch-manipulation"
         >
           Update →
         </Link>
       </div>
 
-      {/* Teams */}
-      <div className="px-4 py-2">
+      {/* Score Block */}
+      <div className="bg-black/20 rounded-xl p-4 space-y-3">
         {/* Home */}
-        <div className="flex items-center gap-3 py-3">
+        <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
             style={{ backgroundColor: match.homeFaculty.colorPrimary }}
           >
             {match.homeFaculty.abbreviation}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-100 truncate">{match.homeFaculty.name}</p>
-            <p className="text-xs text-gray-500 font-semibold mt-0.5">HOME</p>
-          </div>
-          <span className="text-4xl font-black text-white tabular-nums flex-shrink-0">{match.scoreHome}</span>
-        </div>
-
-        {/* Minute divider */}
-        <div className="flex items-center justify-center py-1">
-          <span style={{ background: accentBg, border: `1px solid ${accentBorder}`, color: pillBg }} className="text-xs font-black px-4 py-1 rounded-full">
-            {match.matchMinute || 0}'
+          <span className="text-white font-bold text-sm sm:text-base flex-1 truncate">
+            {match.homeFaculty.name}
+          </span>
+          <span className="text-3xl sm:text-4xl font-black text-white tabular-nums ml-2">
+            {match.scoreHome}
           </span>
         </div>
 
+        <div className="h-px bg-white/10" />
+
         {/* Away */}
-        <div className="flex items-center gap-3 py-3">
+        <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
             style={{ backgroundColor: match.awayFaculty.colorPrimary }}
           >
             {match.awayFaculty.abbreviation}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-100 truncate">{match.awayFaculty.name}</p>
-            <p className="text-xs text-gray-500 font-semibold mt-0.5">AWAY</p>
-          </div>
-          <span className="text-4xl font-black text-white tabular-nums flex-shrink-0">{match.scoreAway}</span>
+          <span className="text-white font-bold text-sm sm:text-base flex-1 truncate">
+            {match.awayFaculty.name}
+          </span>
+          <span className="text-3xl sm:text-4xl font-black text-white tabular-nums ml-2">
+            {match.scoreAway}
+          </span>
         </div>
       </div>
     </div>
   );
 }
+// ============================================
+// ============================================
+
 
 // ============================================
 // RESPONSIVE STANDINGS TABLE
