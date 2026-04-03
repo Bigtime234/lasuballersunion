@@ -162,63 +162,75 @@ function StatCard({
 // ============================================
 // LIVE MATCH CARD
 // ============================================
+// ============================================
+// LIVE MATCH CARD
+// ============================================
 function LiveMatchCard({ match, category }: { match: Match; category: 'men' | 'women' }) {
   const borderColor = category === 'men' ? 'border-red-500/50' : 'border-pink-500/50';
   const shadowColor = category === 'men' ? 'shadow-red-500/20' : 'shadow-pink-500/20';
-  const gradientFrom = category === 'men' ?   'from-red-950' : 'from-pink-950';
+  const gradientFrom = category === 'men' ? 'from-red-950' : 'from-pink-950';
   const gradientTo = category === 'men' ? 'to-red-900' : 'to-pink-900';
-  const pulseColor = category === 'men' ?   'bg-red-500' : 'bg-pink-500';
+  const pulseColor = category === 'men' ? 'bg-red-500' : 'bg-pink-500';
 
   return (
-    <div
-      className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} border-2 ${borderColor} rounded-xl p-6 shadow-lg ${shadowColor}`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+    <div className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} border-2 ${borderColor} rounded-xl p-4 sm:p-6 shadow-lg ${shadowColor}`}>
+      
+      {/* Top Row — Live badge + importance + update link */}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className={`px-3 py-1 ${pulseColor} text-white rounded-full text-xs font-black animate-pulse flex items-center gap-1`}>
             <div className="w-2 h-2 bg-white rounded-full" />
             LIVE {match.matchMinute || 0}'
           </span>
-          <ImportanceBadge importance={match. importance} />
+          <ImportanceBadge importance={match.importance} />
         </div>
-        <Link href={`/control-center/scores/${match.id}`} className="text-xs font-bold text-gray-300 hover:text-white transition">
+        <Link
+          href={`/control-center/scores/${match.id}`}
+          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition touch-manipulation"
+        >
           Update →
         </Link>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-              style={{ backgroundColor: match.homeFaculty.colorPrimary }}
-            >
-              {match.homeFaculty.abbreviation}
-            </div>
-            <span className="text-white font-bold truncate text-sm">{match.homeFaculty.name}</span>
+      {/* Score Block */}
+      <div className="bg-black/20 rounded-xl p-4 space-y-3">
+        {/* Home */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
+            style={{ backgroundColor: match.homeFaculty.colorPrimary }}
+          >
+            {match.homeFaculty.abbreviation}
           </div>
-          <span className="text-3xl font-black text-white ml-2">{match.scoreHome}</span>
+          <span className="text-white font-bold text-sm sm:text-base flex-1 truncate">
+            {match.homeFaculty.name}
+          </span>
+          <span className="text-3xl sm:text-4xl font-black text-white tabular-nums ml-2">
+            {match.scoreHome}
+          </span>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+        <div className="h-px bg-white/10" />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-              style={{ backgroundColor: match.awayFaculty.colorPrimary }}
-            >
-              {match.awayFaculty.abbreviation}
-            </div>
-            <span className="text-white font-bold truncate text-sm">{match.awayFaculty.name}</span>
+        {/* Away */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-xs font-black"
+            style={{ backgroundColor: match.awayFaculty.colorPrimary }}
+          >
+            {match.awayFaculty.abbreviation}
           </div>
-          <span className="text-3xl font-black text-white ml-2">{match.scoreAway}</span>
+          <span className="text-white font-bold text-sm sm:text-base flex-1 truncate">
+            {match.awayFaculty.name}
+          </span>
+          <span className="text-3xl sm:text-4xl font-black text-white tabular-nums ml-2">
+            {match.scoreAway}
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
 // ============================================
 // RESPONSIVE STANDINGS TABLE
 // ============================================
